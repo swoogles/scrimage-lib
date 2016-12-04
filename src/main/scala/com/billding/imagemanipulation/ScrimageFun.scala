@@ -148,12 +148,15 @@ object ScrimageFun {
 
   def drawSomeSquares() = {
 
-     val typedItems = Range(1, 6).map { curIdx =>
-       NumericalListItem(
-         Rect(x=200+100*curIdx, y=50, width=50, height=50) ,
-         curIdx
-       )
-     }
+    val typedItems = Range(1, 6).map { curIdx =>
+      NumericalListItem(
+        Rect(x=200+100*curIdx, y=50, width=50, height=50, { g2 =>
+          g2.setColor(JColor.GREEN)
+          g2.setFont(imgFont)
+        }) ,
+        curIdx
+      )
+    }
 
 
      val accumulator = NumericalListItem(Rect(x=50, y=50, width=50, height=50), 0)
@@ -161,7 +164,8 @@ object ScrimageFun {
      val typedListsB = typedItems.scanLeft((accumulator, typedItems)){
        case ((acc, remainingItems), nextItem) => 
          (
-           acc.copy(
+           acc
+             .copy(
              rect=acc.rect.copy(
                y=acc.rect.y+100
              ),
@@ -213,6 +217,7 @@ sealed trait CustomDrawable {
   val rect: Rect
   val value: Int
   val text: Text
+
 }
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {

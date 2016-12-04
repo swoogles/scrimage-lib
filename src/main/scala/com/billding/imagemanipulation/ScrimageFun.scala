@@ -147,6 +147,8 @@ object ScrimageFun {
   }
 
   def drawSomeSquares() = {
+    val startingTextBox = HeadLongTextListItem("801-971-9844")
+    // case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
 
     val typedItems = Range(1, 6).map { curIdx =>
       NumericalListItem(
@@ -181,23 +183,6 @@ object ScrimageFun {
            )
      }
 
-     val typedLists = typedItems.scanLeft((0, typedItems)){
-       case ((curVal, remainingItems), nextItem) => 
-         (
-           curVal+nextItem.value, 
-           remainingItems.tail.map(li=>
-               li.copy(
-                 rect=li.rect.copy(
-                   y=li.rect.y+100
-                 )
-               )
-             )
-           )
-     }
-
-
-    pprint.pprintln(typedLists)
-
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
     val imgPath = generatedImgDir / (s"rectangles.jpg")
@@ -211,6 +196,58 @@ object ScrimageFun {
 
     imgWithScannedDrawables.output(imgPath.toIO)(JpegWriter())
   }
+
+  def longerTextBoxes() = {
+    val startingTextBox = HeadLongTextListItem("801-971-9844")
+    val nextLongTextBox = TailLongTextListItem("800-222-3333", startingTextBox)
+    val finalLongTextBox = TailLongTextListItem("600-222-3333", nextLongTextBox)
+
+    val typedItems = Range(1, 6).map { curIdx =>
+      NumericalListItem(
+        Rect(x=200+100*curIdx, y=50, width=50, height=50, { g2 =>
+          g2.setColor(JColor.GREEN)
+          g2.setFont(imgFont)
+        }) ,
+        curIdx
+      )
+    }
+
+
+     val accumulator = NumericalListItem(Rect(x=50, y=50, width=50, height=50), 0)
+
+     val typedListsB = typedItems.scanLeft((accumulator, typedItems)){
+       case ((acc, remainingItems), nextItem) => 
+         (
+           acc
+             .copy(
+             rect=acc.rect.copy(
+               y=acc.rect.y+100
+             ),
+             value=acc.value+nextItem.value
+           ), 
+           remainingItems.tail.map(li=>
+               li.copy(
+                 rect=li.rect.copy(
+                   y=li.rect.y+100
+                 )
+               )
+             )
+           )
+     }
+
+    val img: Canvas = Image(1400, 800)
+      .fit(1400, 800, Color.Black)
+    val imgPath = generatedImgDir / (s"rectangles.jpg")
+
+    val scannedDrawables = LongItem.allDrawables(finalLongTextBox)
+    pprint.pprintln(scannedDrawables)
+
+    val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
+      case (curImg: Canvas, li: Drawable) => curImg.draw(li)
+    }
+
+    imgWithScannedDrawables.output(imgPath.toIO)(JpegWriter())
+  }
 }
 
 sealed trait CustomDrawable {
@@ -219,6 +256,38 @@ sealed trait CustomDrawable {
   val text: Text
 
 }
+
+sealed trait LongItem extends CustomDrawable {
+  val imgFont = new JFont("Sans-seriff", 1, 20)
+}
+
+object LongItem {
+  def allDrawables(li: LongItem): List[Drawable] = li match {
+    case head: HeadLongTextListItem => List(head.rect, head.text)
+    case tail: TailLongTextListItem => List(tail.rect, tail.text) ::: allDrawables(tail.prevItem)
+  }
+}
+
+case class HeadLongTextListItem(content: String, value: Int = 1) extends LongItem {
+  val rect =
+        Rect(x=100, y=50, width=250, height=50)
+  val text =
+       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.BLUE)
+         g2.setFont(imgFont)
+       })
+}
+
+case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
+  val rect =
+        Rect(x=prevItem.rect.x+300, y=50, width=250, height=50)
+  val text =
+       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.BLUE)
+         g2.setFont(imgFont)
+       })
+}
+
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {
   val imgFont = new JFont("Sans-seriff", 1, 28)

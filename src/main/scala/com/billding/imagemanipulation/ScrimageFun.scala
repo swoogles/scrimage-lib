@@ -22,6 +22,7 @@ import com.sksamuel.scrimage.Directory
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.sksamuel.scrimage.canvas.drawable.Rect
+import com.sksamuel.scrimage.canvas.Drawable
 
 /**
   * Created by bfrasure on 11/15/16.
@@ -148,24 +149,32 @@ object ScrimageFun {
        Rect(x=100*curIdx, y=50, width=50, height=50) 
      }
 
-     val labels = rectangles.map { curRect =>
-       Text("A", curRect.x+15, curRect.y+30, { g2 =>
+     val lowerRectangles = rectangles.map { curRect =>
+       curRect.copy(y=curRect.y+100)
+     }
+
+     def labelRectangle(label: Char): Rect=>Text = { curRect =>
+       Text(label.toString, curRect.x+15, curRect.y+30, { g2 =>
          g2.setBackground(JColor.WHITE)
          g2.setFont(imgFont)
        })
      }
 
 
+     val labels = rectangles.map { labelRectangle('A') }
+     val lowerLabels = lowerRectangles.map { labelRectangle('B') }
+
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
     val imgPath = generatedImgDir / (s"rectangles.jpg")
-    val imgWithRectangles = rectangles.foldLeft(img){
-      case (curImg: Canvas, rect: Rect) => curImg.draw(rect)
+
+    val drawables = rectangles ++ labels ++ lowerRectangles ++ lowerLabels
+
+    val imgWithMultipleLists = drawables.foldLeft(img){
+      case (curImg: Canvas, drawable: Drawable) => curImg.draw(drawable)
     }
-    val imgWithLabels = labels.foldLeft(imgWithRectangles){
-      case (curImg: Canvas, label: Text) => curImg.draw(label)
-    }
-    imgWithLabels.output(imgPath.toIO)(JpegWriter())
+
+    imgWithMultipleLists.output(imgPath.toIO)(JpegWriter())
   }
 }
 

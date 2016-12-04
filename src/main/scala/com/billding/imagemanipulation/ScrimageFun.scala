@@ -24,11 +24,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.Drawable
 
+import pprint.Config
+
 /**
   * Created by bfrasure on 11/15/16.
   */
 object ScrimageFun {
   import ammonite.ops._
+
+  implicit val pprintConfig = Config()
 
   val originalImgDir = ammonite.ops.pwd / 'OriginalImages
   val listed = ls! originalImgDir
@@ -143,15 +147,44 @@ object ScrimageFun {
   }
 
   def drawSomeSquares() = {
-     // val rect = Rect(x=50, y=50, width=50, height=50) 
+
      val rectangles = Range(1, 10).map { curIdx =>
-       println(curIdx)
        Rect(x=100*curIdx, y=50, width=50, height=50) 
      }
+
+     val typedItems = Range(1, 10).map { curIdx =>
+       ListItem(
+         Rect(x=100*curIdx, y=50, width=50, height=50) ,
+         'A',
+         curIdx
+       )
+     }
+
 
      val lowerRectangles = rectangles.map { curRect =>
        curRect.copy(y=curRect.y+100)
      }
+     
+     val lists = lowerRectangles.scanLeft((0, lowerRectangles)){
+       case ((curVal, remainingItems), nextItems) => (curVal+1, remainingItems.tail)
+     }
+
+     val typedLists = typedItems.scanLeft((0, typedItems)){
+       case ((curVal, remainingItems), nextItem) => 
+         (
+           curVal+nextItem.value, 
+           remainingItems.tail.map(li=>
+               li.copy(
+                 rect=li.rect.copy(
+                   y=li.rect.y+100
+                 )
+               )
+             )
+           )
+     }
+
+
+    pprint.pprintln(typedLists)
 
      def labelRectangle(label: Char): Rect=>Text = { curRect =>
        Text(label.toString, curRect.x+15, curRect.y+30, { g2 =>
@@ -174,7 +207,25 @@ object ScrimageFun {
       case (curImg: Canvas, drawable: Drawable) => curImg.draw(drawable)
     }
 
-    imgWithMultipleLists.output(imgPath.toIO)(JpegWriter())
+    val scannedDrawables = typedLists.flatMap { tup => tup._2 }
+    pprint.pprintln(scannedDrawables)
+
+    val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
+      case (curImg: Canvas, li: ListItem) => curImg.draw(li.rect).draw(li.text)
+    }
+
+
+
+    // imgWithMultipleLists.output(imgPath.toIO)(JpegWriter())
+    imgWithScannedDrawables.output(imgPath.toIO)(JpegWriter())
   }
 }
 
+case class ListItem(rect: Rect, label: Char, value: Int = 1) {
+  val imgFont = new JFont("Sans-seriff", 1, 28)
+  val text =
+       Text(label.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.WHITE)
+         g2.setFont(imgFont)
+       })
+}

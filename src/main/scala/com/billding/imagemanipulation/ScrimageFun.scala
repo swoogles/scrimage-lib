@@ -213,15 +213,46 @@ object ScrimageFun {
       case (acc, curNumber) => TailLongTextListItem(curNumber, acc)
     }
 
-    val locationLookups = phoneNumbers.map{ number =>
-        areaCodesAndStates.get(number.take(3))
+    val typedPhoneNumbers = phoneNumbers.zipWithIndex.map { case (number, idx) =>
+      PhoneNumberListItem(
+        number,
+        Rect(x=200+100*idx, y=50, width=50, height=50, { g2 =>
+          g2.setColor(JColor.GREEN)
+          g2.setFont(imgFont)
+        })
+      )
+    }
+
+    val organizedNumbers = Map[String, List[String]]().withDefaultValue(List(): List[String])
+    val updatedMap = (organizedNumbers
+      + ("UNKNOWN" -> List())
+      + ("UT" -> List("911"))
+      + ("CO" -> List("100-200-3000"))
+      )
+    pprint.pprintln(updatedMap)
+
+    val locationFolding = typedPhoneNumbers.foldLeft(updatedMap){ case (acc, li) =>
+      println("phone number: " + li)
+      val lookupRes: Option[String] = areaCodesAndStates.get(li.phoneNumber.take(3))
+      println("lookup res: " + lookupRes)
+      val region = lookupRes.getOrElse("UNKNOWN")
+      val neighboringEntries = acc(region)
+      println("neighboring entries: " + neighboringEntries)
+      acc + (region -> (li.phoneNumber :: neighboringEntries))
+//      acc
+    }
+
+
+    val locationLookups = typedPhoneNumbers.map{ case li: PhoneNumberListItem =>
+        areaCodesAndStates.get(li.phoneNumber.take(3))
     }.flatten.toSet
-    pprint.pprintln(locationLookups)
+
+    pprint.pprintln(locationFolding)
   
 
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
-    val imgPath = generatedImgDir / (s"rectangles.jpg")
+    val imgPath = generatedImgDir / (s"phone_folding.jpg")
 
     val scannedDrawables = LongItem.allDrawables(typedPhoneList)
     pprint.pprintln(scannedDrawables)
@@ -288,6 +319,15 @@ case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawa
        Text(label.toString, rect.x+15, rect.y+30, { g2 =>
          g2.setColor(JColor.BLUE)
          g2.setBackground(JColor.WHITE)
+         g2.setFont(imgFont)
+       })
+}
+
+case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends CustomDrawable {
+  val imgFont = new JFont("Sans-seriff", 1, 14)
+  val text =
+       Text(phoneNumber, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.BLUE)
          g2.setFont(imgFont)
        })
 }

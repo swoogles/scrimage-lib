@@ -5,7 +5,7 @@ import org.scalatest.FlatSpec
 class ScrimageFunTests extends FlatSpec {
 
   "scrimage" should "create images for every step" in {
-    ScrimageFun.longerTextBoxes()
+    ScrimageFun.phoneNumbers()
     println("pointless test")
   }
 

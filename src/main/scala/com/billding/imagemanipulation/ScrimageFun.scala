@@ -197,49 +197,33 @@ object ScrimageFun {
     imgWithScannedDrawables.output(imgPath.toIO)(JpegWriter())
   }
 
-  def longerTextBoxes() = {
-    val startingTextBox = HeadLongTextListItem("801-971-9844")
-    val nextLongTextBox = TailLongTextListItem("800-222-3333", startingTextBox)
-    val finalLongTextBox = TailLongTextListItem("600-222-3333", nextLongTextBox)
-
-    val typedItems = Range(1, 6).map { curIdx =>
-      NumericalListItem(
-        Rect(x=200+100*curIdx, y=50, width=50, height=50, { g2 =>
-          g2.setColor(JColor.GREEN)
-          g2.setFont(imgFont)
-        }) ,
-        curIdx
-      )
+  def phoneNumbers() = {
+    val areaCodesAndStates = Map(
+      "801"->"UT",
+      "865"->"TN"
+    )
+    val phoneNumbers = List(
+      "801-971-9844",
+      "800-222-3333",
+      "865-104-1623",
+      "865-200-3273",
+      "600-222-3333"
+    )
+    val typedPhoneList = phoneNumbers.foldLeft(HeadLongTextListItem("000-000-0000"): LongItem){
+      case (acc, curNumber) => TailLongTextListItem(curNumber, acc)
     }
 
-
-     val accumulator = NumericalListItem(Rect(x=50, y=50, width=50, height=50), 0)
-
-     val typedListsB = typedItems.scanLeft((accumulator, typedItems)){
-       case ((acc, remainingItems), nextItem) => 
-         (
-           acc
-             .copy(
-             rect=acc.rect.copy(
-               y=acc.rect.y+100
-             ),
-             value=acc.value+nextItem.value
-           ), 
-           remainingItems.tail.map(li=>
-               li.copy(
-                 rect=li.rect.copy(
-                   y=li.rect.y+100
-                 )
-               )
-             )
-           )
-     }
+    val locationLookups = phoneNumbers.map{ number =>
+        areaCodesAndStates.get(number.take(3))
+    }.flatten.toSet
+    pprint.pprintln(locationLookups)
+  
 
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
     val imgPath = generatedImgDir / (s"rectangles.jpg")
 
-    val scannedDrawables = LongItem.allDrawables(finalLongTextBox)
+    val scannedDrawables = LongItem.allDrawables(typedPhoneList)
     pprint.pprintln(scannedDrawables)
 
     val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
@@ -258,7 +242,7 @@ sealed trait CustomDrawable {
 }
 
 sealed trait LongItem extends CustomDrawable {
-  val imgFont = new JFont("Sans-seriff", 1, 20)
+  val imgFont = new JFont("Sans-seriff", 1, 14)
 }
 
 object LongItem {
@@ -270,7 +254,7 @@ object LongItem {
 
 case class HeadLongTextListItem(content: String, value: Int = 1) extends LongItem {
   val rect =
-        Rect(x=100, y=50, width=250, height=50)
+        Rect(x=100, y=50, width=150, height=50)
   val text =
        Text(content.toString, rect.x+15, rect.y+30, { g2 =>
          g2.setBackground(JColor.BLUE)
@@ -280,7 +264,7 @@ case class HeadLongTextListItem(content: String, value: Int = 1) extends LongIte
 
 case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
   val rect =
-        Rect(x=prevItem.rect.x+300, y=50, width=250, height=50)
+        Rect(x=prevItem.rect.x+200, y=50, width=150, height=50)
   val text =
        Text(content.toString, rect.x+15, rect.y+30, { g2 =>
          g2.setBackground(JColor.BLUE)

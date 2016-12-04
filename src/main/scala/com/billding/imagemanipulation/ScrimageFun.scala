@@ -148,25 +148,33 @@ object ScrimageFun {
 
   def drawSomeSquares() = {
 
-     val rectangles = Range(1, 10).map { curIdx =>
-       Rect(x=100*curIdx, y=50, width=50, height=50) 
-     }
-
-     val typedItems = Range(1, 10).map { curIdx =>
-       ListItem(
-         Rect(x=100*curIdx, y=50, width=50, height=50) ,
-         'A',
+     val typedItems = Range(1, 6).map { curIdx =>
+       NumericalListItem(
+         Rect(x=200+100*curIdx, y=50, width=50, height=50) ,
          curIdx
        )
      }
 
 
-     val lowerRectangles = rectangles.map { curRect =>
-       curRect.copy(y=curRect.y+100)
-     }
-     
-     val lists = lowerRectangles.scanLeft((0, lowerRectangles)){
-       case ((curVal, remainingItems), nextItems) => (curVal+1, remainingItems.tail)
+     val accumulator = NumericalListItem(Rect(x=50, y=50, width=50, height=50), 0)
+
+     val typedListsB = typedItems.scanLeft((accumulator, typedItems)){
+       case ((acc, remainingItems), nextItem) => 
+         (
+           acc.copy(
+             rect=acc.rect.copy(
+               y=acc.rect.y+100
+             ),
+             value=acc.value+nextItem.value
+           ), 
+           remainingItems.tail.map(li=>
+               li.copy(
+                 rect=li.rect.copy(
+                   y=li.rect.y+100
+                 )
+               )
+             )
+           )
      }
 
      val typedLists = typedItems.scanLeft((0, typedItems)){
@@ -186,45 +194,41 @@ object ScrimageFun {
 
     pprint.pprintln(typedLists)
 
-     def labelRectangle(label: Char): Rect=>Text = { curRect =>
-       Text(label.toString, curRect.x+15, curRect.y+30, { g2 =>
-         g2.setBackground(JColor.WHITE)
-         g2.setFont(imgFont)
-       })
-     }
-
-
-     val labels = rectangles.map { labelRectangle('A') }
-     val lowerLabels = lowerRectangles.map { labelRectangle('B') }
-
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
     val imgPath = generatedImgDir / (s"rectangles.jpg")
 
-    val drawables = rectangles ++ labels ++ lowerRectangles ++ lowerLabels
-
-    val imgWithMultipleLists = drawables.foldLeft(img){
-      case (curImg: Canvas, drawable: Drawable) => curImg.draw(drawable)
-    }
-
-    val scannedDrawables = typedLists.flatMap { tup => tup._2 }
+    val scannedDrawables = typedListsB.flatMap { tup => tup._1 +: tup._2 }
     pprint.pprintln(scannedDrawables)
 
     val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
-      case (curImg: Canvas, li: ListItem) => curImg.draw(li.rect).draw(li.text)
+      case (curImg: Canvas, li: CustomDrawable) => curImg.draw(li.rect).draw(li.text)
     }
 
-
-
-    // imgWithMultipleLists.output(imgPath.toIO)(JpegWriter())
     imgWithScannedDrawables.output(imgPath.toIO)(JpegWriter())
   }
 }
 
-case class ListItem(rect: Rect, label: Char, value: Int = 1) {
+sealed trait CustomDrawable {
+  val rect: Rect
+  val value: Int
+  val text: Text
+}
+
+case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {
+  val imgFont = new JFont("Sans-seriff", 1, 28)
+  val text =
+       Text(value.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.BLUE)
+         g2.setFont(imgFont)
+       })
+}
+
+case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawable {
   val imgFont = new JFont("Sans-seriff", 1, 28)
   val text =
        Text(label.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setColor(JColor.BLUE)
          g2.setBackground(JColor.WHITE)
          g2.setFont(imgFont)
        })

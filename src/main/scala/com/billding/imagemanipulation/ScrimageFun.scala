@@ -23,10 +23,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import pprint.Config
 
-trait TextDrawing {
-  import ammonite.ops._
+trait TextDrawing extends FileSystemOperations {
+  implicit val pprintConfig = Config()
+
   val imgFont = new JFont("Sans-seriff", 1, 28)
-  val generatedImgDir = cwd / 'GeneratedImages
   def makeTextDrawable(content: List[String]): List[Text] = {
     makeTextDrawable(content, 20, 30)
   }
@@ -40,8 +40,20 @@ trait TextDrawing {
     }
   }
 
-  def makeImgFromText(content: List[String], sequenceIdx: Int = 0) = {
+  def makeImgFromText(content: List[String], sequenceIdx: Int = 0): java.io.File = {
     val drawableText = makeTextDrawable(content)
+    val img: Canvas = Image(1400, 800)
+      .fit(1400, 800, Color.Black)
+      .pad(100, Color.Black)
+    val imgPath = generatedImgDir / (s"commit_${sequenceIdx}_.jpg")
+    val imgWithText: Canvas = drawableText.foldLeft(img){
+      case (curImg: Canvas, nextText: Text) => curImg.draw(nextText)
+    }
+    imgWithText.output(imgPath.toIO)(JpegWriter())
+  }
+
+  def makeImgFromTextAt(x: Int, y: Int, content: List[String], sequenceIdx: Int = 0): java.io.File = {
+    val drawableText = makeTextDrawable(content, x, y)
     val img: Canvas = Image(1400, 800)
       .fit(1400, 800, Color.Black)
       .pad(100, Color.Black)
@@ -54,34 +66,7 @@ trait TextDrawing {
 
 }
 
-/**
-  * Created by bfrasure on 11/15/16.
-  */
-object ScrimageFun extends TextDrawing {
-  import ammonite.ops._
-
-  implicit val pprintConfig = Config()
-
-  val originalImgDir = ammonite.ops.pwd / 'OriginalImages
-  val listed = ls! originalImgDir
-  val manipulatedImgDir = cwd / 'ManipulatedImages
-
-  def copyFreshImages_!(srcDir: Path, targetDir: Path): LsSeq = {
-    val oldImages = ls! targetDir
-    oldImages.map{ rm! _ }
-    mkdir! targetDir
-    for ( file <- (ls! srcDir) ) { cp.into(file, targetDir)  }
-    ls! targetDir
-  }
-
-  def generateFreshImages_!(targetDir: Path) = {
-    mkdir! targetDir
-    val oldImages = ls! targetDir
-    oldImages.map{ rm! _ }
-//    for ( file <- (ls! srcDir) ) { cp.into(file, targetDir)  }
-//    ls! targetDir
-  }
-
+object ScrimageFun extends TextDrawing with FileSystemOperations {
   val imgTextNew =
     Text("Happy Holidays!", 200, 800-20, { g2 =>
       g2.setBackground(JColor.WHITE)
@@ -128,7 +113,7 @@ object ScrimageFun extends TextDrawing {
 
     for (imgPath <- copyFreshImages_!(originalImgDir, manipulatedImgDir);
          img =
-         borderFunc(Image.fromFile(imgPath.toIO)
+           borderFunc(Image.fromFile(imgPath.toIO)
            .fit(1000, 800, Color.Black))
     ) { img.output(imgPath.toIO)(JpegWriter())}
   }

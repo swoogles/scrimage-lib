@@ -232,14 +232,10 @@ object ScrimageFun {
     pprint.pprintln(updatedMap)
 
     val locationFolding = typedPhoneNumbers.foldLeft(updatedMap){ case (acc, li) =>
-      println("phone number: " + li)
       val lookupRes: Option[String] = areaCodesAndStates.get(li.phoneNumber.take(3))
-      println("lookup res: " + lookupRes)
       val region = lookupRes.getOrElse("UNKNOWN")
       val neighboringEntries = acc(region)
-      println("neighboring entries: " + neighboringEntries)
       acc + (region -> (li.phoneNumber :: neighboringEntries))
-//      acc
     }
 
 
@@ -268,12 +264,19 @@ object ScrimageFun {
 sealed trait CustomDrawable {
   val rect: Rect
   val value: Int
-  val text: Text
+  val content: String
+  val imgFont = new JFont("Sans-seriff", 1, 28)
+
+  def text: Text =
+       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
+         g2.setBackground(JColor.BLUE)
+         g2.setFont(imgFont)
+       })
 
 }
 
 sealed trait LongItem extends CustomDrawable {
-  val imgFont = new JFont("Sans-seriff", 1, 14)
+  override val imgFont = new JFont("Sans-seriff", 1, 14)
 }
 
 object LongItem {
@@ -286,36 +289,21 @@ object LongItem {
 case class HeadLongTextListItem(content: String, value: Int = 1) extends LongItem {
   val rect =
         Rect(x=100, y=50, width=150, height=50)
-  val text =
-       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
-         g2.setBackground(JColor.BLUE)
-         g2.setFont(imgFont)
-       })
 }
 
 case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
   val rect =
         Rect(x=prevItem.rect.x+200, y=50, width=150, height=50)
-  val text =
-       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
-         g2.setBackground(JColor.BLUE)
-         g2.setFont(imgFont)
-       })
 }
 
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {
-  val imgFont = new JFont("Sans-seriff", 1, 28)
-  val text =
-       Text(value.toString, rect.x+15, rect.y+30, { g2 =>
-         g2.setBackground(JColor.BLUE)
-         g2.setFont(imgFont)
-       })
+  val content = value.toString
 }
 
 case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawable {
-  val imgFont = new JFont("Sans-seriff", 1, 28)
-  val text =
+  val content = label.toString
+  override val text =
        Text(label.toString, rect.x+15, rect.y+30, { g2 =>
          g2.setColor(JColor.BLUE)
          g2.setBackground(JColor.WHITE)
@@ -324,10 +312,5 @@ case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawa
 }
 
 case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends CustomDrawable {
-  val imgFont = new JFont("Sans-seriff", 1, 14)
-  val text =
-       Text(phoneNumber, rect.x+15, rect.y+30, { g2 =>
-         g2.setBackground(JColor.BLUE)
-         g2.setFont(imgFont)
-       })
+  val content = phoneNumber
 }

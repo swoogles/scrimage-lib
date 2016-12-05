@@ -52,18 +52,6 @@ trait TextDrawing extends FileSystemOperations {
     imgWithText.output(imgPath.toIO)(JpegWriter())
   }
 
-  def makeImgFromTextAt(x: Int, y: Int, content: List[String], sequenceIdx: Int = 0): java.io.File = {
-    val drawableText = makeTextDrawable(content, x, y)
-    val img: Canvas = Image(1400, 800)
-      .fit(1400, 800, Color.Black)
-      .pad(100, Color.Black)
-    val imgPath = generatedImgDir / (s"commit_${sequenceIdx}_.jpg")
-    val imgWithText: Canvas = drawableText.foldLeft(img){
-      case (curImg: Canvas, nextText: Text) => curImg.draw(nextText)
-    }
-    imgWithText.output(imgPath.toIO)(JpegWriter())
-  }
-
 }
 
 object ScrimageFun extends TextDrawing with FileSystemOperations {

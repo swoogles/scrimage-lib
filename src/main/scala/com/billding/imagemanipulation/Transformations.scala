@@ -36,6 +36,17 @@ object Transformations extends TextDrawing with FileSystemOperations {
     finalImage.output(imgPath.toIO)(JpegWriter())
   }
 
+  def multiImageGeneratingFunction( imgName: String)( imgProducer: Image => List[Image]) = {
+    val img: Canvas = Image(1400, 800)
+      .fit(1400, 800, Color.Black)
+    val finalImages = imgProducer(img)
+    finalImages.zipWithIndex.foreach { case(finalImage, idx) =>
+      val imgPath = generatedImgDir / (s"${imgName}_$idx.jpg")
+      finalImage.output(imgPath.toIO)(JpegWriter())
+    }
+  }
+
+
   def foldSummationImage() = imageGeneratingFunction("rectangles") { img =>
     val startingTextBox = HeadLongTextListItem("801-971-9844")
     // case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
@@ -82,7 +93,7 @@ object Transformations extends TextDrawing with FileSystemOperations {
     imgWithScannedDrawables
   }
 
-  def phoneNumbers() = imageGeneratingFunction("phone_folding") { img =>
+  def phoneNumbersMultiStage() = multiImageGeneratingFunction("phone_folding") { img =>
     val areaCodesAndStates = Map(
       "801"->"UT",
       "970"->"CO"
@@ -94,44 +105,36 @@ object Transformations extends TextDrawing with FileSystemOperations {
       "970-222-3333",
       "800-222-3333"
     )
-    val typedPhoneList = phoneNumbers.foldLeft(HeadLongTextListItem("000-000-0000"): LongItem){
-      case (acc, curNumber) => TailLongTextListItem(curNumber, acc)
-    }
-
     val typedPhoneNumbers = phoneNumbers.zipWithIndex.map { case (number, idx) =>
       PhoneNumberListItem(
         number,
-        Rect(x=200+100*idx, y=50, width=50, height=50, { g2 =>
+        Rect(x=200+200*idx, y=50, width=150, height=50, { g2 =>
           g2.setColor(JColor.GREEN)
           g2.setFont(imgFont)
         })
       )
     }
 
-    val organizedNumbers = Map[String, List[String]]().withDefaultValue(List(): List[String])
+    val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
-    // Functional buildup method
-    val locationFolding = typedPhoneNumbers.scanLeft(organizedNumbers){ case (acc, li) =>
-      val lookupRes: Option[String] = areaCodesAndStates.get(li.phoneNumber.take(3))
-      val region = lookupRes.getOrElse("UNKNOWN")
-      val neighboringEntries = acc(region)
-      acc + (region -> (li.phoneNumber :: neighboringEntries))
+    val locationFoldingWithRemaining = typedPhoneNumbers.scanLeft((organizedNumbers, typedPhoneNumbers)){ case ((sortedNumbers, remainingNumbers), li) =>
+      val region = areaCodesAndStates.get(li.phoneNumber.take(3)).getOrElse("UNKNOWN")
+      val neighboringEntries = sortedNumbers(region)
+      (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
     }
+    pprint.pprintln(locationFoldingWithRemaining)
 
-    val foldedLocationDrawables: List[Text] = locationFolding.zipWithIndex.flatMap { case(currentLocations, idx) =>
+
+    val foldedLocationDrawablesWithRemaining: List[List[Drawable]] = locationFoldingWithRemaining.zipWithIndex.map { case((currentLocations, remainingNumbers), idx) =>
       val locationMap = pprint.stringify(currentLocations, width=40).split("\n").toList
-      // makeImgFromText(locationMap, idx )
-      makeTextDrawable(locationMap, 200, 200)
-    }
-    pprint.pprintln(locationFolding, width=40)
-
-    val scannedDrawables = LongItem.allDrawables(typedPhoneList) ++ foldedLocationDrawables
-
-    val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
-      case (curImg: Image, li: Drawable) => curImg.draw(li)
+      remainingNumbers.map(_.text)  ::: remainingNumbers.map(_.rect) ::: makeTextDrawable(locationMap, 200, 200)
     }
 
-    imgWithScannedDrawables
+    foldedLocationDrawablesWithRemaining.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
+        case (curImg: Image, li: Drawable) => curImg.draw(li)
+      }
+    }
   }
 }
 
@@ -186,5 +189,6 @@ case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawa
 }
 
 case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends CustomDrawable {
+  override val imgFont = new JFont("Sans-seriff", 1, 14)
   val content = phoneNumber
 }

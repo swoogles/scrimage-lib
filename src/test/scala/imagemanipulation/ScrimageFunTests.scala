@@ -9,7 +9,7 @@ class ScrimageFunTests extends FlatSpec {
   }
 
   "scrimage" should "create phone number fold demo image" in {
-    Transformations.phoneNumbers()
+    Transformations.phoneNumbersMultiStage()
   }
 
   "scrimage" should "draw a Map image" in {

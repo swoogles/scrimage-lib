@@ -12,9 +12,4 @@ class ScrimageFunTests extends FlatSpec {
     Transformations.phoneNumbersMultiStage()
   }
 
-  "scrimage" should "draw a Map image" in {
-    Transformations.drawMapImage()
-  }
-
-
 }

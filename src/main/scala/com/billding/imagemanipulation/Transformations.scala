@@ -16,40 +16,27 @@ import com.sksamuel.scrimage.canvas.Drawable
 object Transformations extends TextDrawing with FileSystemOperations {
   import ammonite.ops._
 
-  def drawMapImage() = {
-    val mapContents = """
-    Map(
-      "UNKNOWN" -> List("600-222-3333", "800-222-3333"),
-      "UT" -> List("801-971-9844", "911"),
-      "CO" -> List("100-200-3000"),
-      "TN" -> List("865-200-3273", "865-104-1623")
-    )
-    """.split("\n").toList
-    makeImgFromText(mapContents)
-  }
+  val blankImg = Image(1400, 800)
+      .fit(1400, 800, Color.Black)
+
 
   def imageGeneratingFunction( imgName: String)( imgProducer: Image => Image) = {
-    val img: Canvas = Image(1400, 800)
-      .fit(1400, 800, Color.Black)
-    val finalImage = imgProducer(img)
+    val finalImage = imgProducer(blankImg)
     val imgPath = generatedImgDir / (s"$imgName.jpg")
     finalImage.output(imgPath.toIO)(JpegWriter())
   }
 
   def multiImageGeneratingFunction( imgName: String)( imgProducer: Image => List[Image]) = {
-    val img: Canvas = Image(1400, 800)
-      .fit(1400, 800, Color.Black)
-    val finalImages = imgProducer(img)
+    val finalImages = imgProducer(blankImg)
+
     finalImages.zipWithIndex.foreach { case(finalImage, idx) =>
-      val imgPath = generatedImgDir / (s"${imgName}_$idx.jpg")
-      finalImage.output(imgPath.toIO)(JpegWriter())
+      val numberedImgName = s"${imgName}_$idx"
+      imageGeneratingFunction(numberedImgName){ (blankImg)=>finalImage }
     }
   }
 
 
-  def foldSummationImage() = imageGeneratingFunction("rectangles") { img =>
-    val startingTextBox = HeadLongTextListItem("801-971-9844")
-    // case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
+  def foldSummationImage() = multiImageGeneratingFunction("rectangles") { img =>
 
     val typedItems = Range(1, 6).map { curIdx =>
       NumericalListItem(
@@ -59,12 +46,12 @@ object Transformations extends TextDrawing with FileSystemOperations {
         }) ,
         curIdx
       )
-    }
+    }.toList
 
 
      val accumulator = NumericalListItem(Rect(x=50, y=50, width=50, height=50), 0)
 
-     val typedListsB = typedItems.scanLeft((accumulator, typedItems)){
+     val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
        case ((acc, remainingItems), nextItem) => 
          (
            acc
@@ -84,13 +71,13 @@ object Transformations extends TextDrawing with FileSystemOperations {
            )
      }
 
-    val scannedDrawables = typedListsB.flatMap { tup => tup._1 +: tup._2 }
-
-    val imgWithScannedDrawables = scannedDrawables.foldLeft(img){
-      case (curImg: Image, li: CustomDrawable) => curImg.draw(li.rect).draw(li.text)
+    val stagedDrawables: List[List[CustomDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
+    stagedDrawables.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
+        case (curImg: Image, li: CustomDrawable) => curImg.draw(li.rect).draw(li.text)
+      }
     }
 
-    imgWithScannedDrawables
   }
 
   def phoneNumbersMultiStage() = multiImageGeneratingFunction("phone_folding") { img =>
@@ -122,8 +109,6 @@ object Transformations extends TextDrawing with FileSystemOperations {
       val neighboringEntries = sortedNumbers(region)
       (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
     }
-    pprint.pprintln(locationFoldingWithRemaining)
-
 
     val foldedLocationDrawablesWithRemaining: List[List[Drawable]] = locationFoldingWithRemaining.zipWithIndex.map { case((currentLocations, remainingNumbers), idx) =>
       val locationMap = pprint.stringify(currentLocations, width=40).split("\n").toList
@@ -155,24 +140,6 @@ sealed trait CustomDrawable {
 sealed trait LongItem extends CustomDrawable {
   override val imgFont = new JFont("Sans-seriff", 1, 14)
 }
-
-object LongItem {
-  def allDrawables(li: LongItem): List[Drawable] = li match {
-    case head: HeadLongTextListItem => List(head.rect, head.text)
-    case tail: TailLongTextListItem => List(tail.rect, tail.text) ::: allDrawables(tail.prevItem)
-  }
-}
-
-case class HeadLongTextListItem(content: String, value: Int = 1) extends LongItem {
-  val rect =
-        Rect(x=100, y=50, width=150, height=50)
-}
-
-case class TailLongTextListItem(content: String, prevItem: LongItem, value: Int = 1) extends LongItem {
-  val rect =
-        Rect(x=prevItem.rect.x+200, y=50, width=150, height=50)
-}
-
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {
   val content = value.toString

@@ -118,6 +118,58 @@ object Transformations extends TextDrawing with FileSystemOperations {
         case (curImg: Image, li: Drawable) => curImg.draw(li)
       }
     }
+
+  }
+
+  def devicesForUsers() = multiImageGeneratingFunction("user_devices") { img =>
+    val areaCodesAndStates = Map(
+      "801"->"UT",
+      "970"->"CO"
+    )
+
+    val users = List(
+      "Bill Frasure",
+      "Garrett Mctear"
+    )
+
+    val user_devices = Map(
+      "Bill Frasure" -> List("970-104-1623", "970-222-3333"),
+      "Garrett Mctear" -> List("801-971-9844", "801-200-3273")
+      )
+
+    val phoneNumbers = List(
+      "800-222-3333"
+    )
+
+    val typedUsers = users.zipWithIndex.map { case (name, idx) =>
+      PhoneNumberListItem(
+        name,
+        Rect(x=200+200*idx, y=50, width=150, height=50, { g2 =>
+          g2.setColor(JColor.GREEN)
+          g2.setFont(imgFont)
+        })
+      )
+    }
+
+    val organizedNumbers = List[String]()
+
+    val devicesWithRemainingUsers = typedUsers.scanLeft((organizedNumbers, typedUsers)){ case ((sortedNumbers, remainingUsers), user) =>
+      val userDevices = user_devices.get(user.phoneNumber)
+      (sortedNumbers ::: userDevices.toList.flatten, remainingUsers.tail)
+      // (sortedNumbers + (region -> (user.phoneNumber :: neighboringEntries)), remainingUsers.tail)
+    }
+
+    val foldedLocationDrawablesWithRemaining: List[List[Drawable]] = devicesWithRemainingUsers.zipWithIndex.map { case((currentLocations, remainingUsers), idx) =>
+      val locationMap = pprint.stringify(currentLocations, width=40).split("\n").toList
+      remainingUsers.map(_.text)  ::: remainingUsers.map(_.rect) ::: makeTextDrawable(locationMap, 200, 200)
+    }
+
+    foldedLocationDrawablesWithRemaining.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
+        case (curImg: Image, li: Drawable) => curImg.draw(li)
+      }
+    }
+
   }
 }
 

@@ -12,4 +12,9 @@ class ScrimageFunTests extends FlatSpec {
     Transformations.phoneNumbersMultiStage()
   }
 
+  "scrimage" should "create user->devices fold image" in {
+    Transformations.devicesForUsers()
+  }
+
+
 }

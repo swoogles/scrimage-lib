@@ -10,6 +10,7 @@ import com.sksamuel.scrimage.canvas.Font
 
 import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.Drawable
+import com.sksamuel.scrimage.canvas.drawable.Text
 
 object Transformations extends TextDrawing with FileSystemOperations {
   import ammonite.ops._
@@ -122,24 +123,18 @@ object Transformations extends TextDrawing with FileSystemOperations {
   }
 
   def devicesForUsers() = multiImageGeneratingFunction("user_devices") { img =>
-    val areaCodesAndStates = Map(
-      "801"->"UT",
-      "970"->"CO"
-    )
 
     val users = List(
       "Bill Frasure",
-      "Garrett Mctear"
+      "Garrett Mctear",
+      "Andrew Proctor"
     )
 
     val user_devices = Map(
       "Bill Frasure" -> List("970-104-1623", "970-222-3333"),
-      "Garrett Mctear" -> List("801-971-9844", "801-200-3273")
+      "Garrett Mctear" -> List("801-971-9844", "801-200-3273"),
+      "Andrew Proctor" -> List("336-687-3176", "336-654-5141")
       )
-
-    val phoneNumbers = List(
-      "800-222-3333"
-    )
 
     val typedUsers = users.zipWithIndex.map { case (name, idx) =>
       PhoneNumberListItem(
@@ -154,9 +149,8 @@ object Transformations extends TextDrawing with FileSystemOperations {
     val organizedNumbers = List[String]()
 
     val devicesWithRemainingUsers = typedUsers.scanLeft((organizedNumbers, typedUsers)){ case ((sortedNumbers, remainingUsers), user) =>
-      val userDevices = user_devices.get(user.phoneNumber)
-      (sortedNumbers ::: userDevices.toList.flatten, remainingUsers.tail)
-      // (sortedNumbers + (region -> (user.phoneNumber :: neighboringEntries)), remainingUsers.tail)
+      val userDevices = user_devices.get(user.phoneNumber).toList.flatten
+      (sortedNumbers ::: userDevices, remainingUsers.tail)
     }
 
     val foldedLocationDrawablesWithRemaining: List[List[Drawable]] = devicesWithRemainingUsers.zipWithIndex.map { case((currentLocations, remainingUsers), idx) =>
@@ -164,8 +158,16 @@ object Transformations extends TextDrawing with FileSystemOperations {
       remainingUsers.map(_.text)  ::: remainingUsers.map(_.rect) ::: makeTextDrawable(locationMap, 200, 200)
     }
 
+    val user_devices_pretty_representation: List[String] = pprint.stringify(user_devices, width=40).split("\n").toList
+    val user_devices_drawables: List[Drawable] = makeTextDrawable(user_devices_pretty_representation, 200, 500)
+      
+
+    // This makeks the DB rep display on one slide by itself. What I really need to do is add this to all the other lists.
+    // val drawablesWithDBRepresentation: List[List[Drawable]] =  :: foldedLocationDrawablesWithRemaining
+
     foldedLocationDrawablesWithRemaining.map { currentDrawables =>
-      currentDrawables.foldLeft(img){
+      (currentDrawables ::: user_devices_drawables)
+      .foldLeft(img){
         case (curImg: Image, li: Drawable) => curImg.draw(li)
       }
     }

@@ -60,6 +60,18 @@ object ScrimageFun extends TextDrawing with FileSystemOperations {
       g2.setBackground(JColor.WHITE)
       g2.setFont(imgFont)
     })
+  
+  def compositeImages(file1: java.io.File, file2: java.io.File) = {
+    import com.sksamuel.scrimage.composite.OverlayComposite
+  val image1 = Image.fromFile(file1)
+  val image2 = Image.fromFile(file2)
+  val composed = image2.composite(new OverlayComposite(.8), image1)
+    import ammonite.ops._
+    val generatedImages: ammonite.ops.Path = cwd / "GeneratedImages"
+    val compositeOutFile = generatedImages / "composite.jpg"
+    composed.output(compositeOutFile.toIO)(JpegWriter())
+  }
+
 
   val borderFunc: (Image=>Image) = (imgInner) => {
     val totalBorderSize = 150

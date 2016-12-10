@@ -18,6 +18,20 @@ sealed trait CustomDrawable {
 
 }
 
+case class ImgDrawable(rect: Rect, imgFile: java.io.File) {
+  import com.sksamuel.scrimage.Image
+  import com.sksamuel.scrimage.ScaleMethod.FastScale
+  import com.sksamuel.scrimage.canvas.Canvas
+  val image1 = Image.fromFile(imgFile)
+    .scaleTo(rect.width,rect.height, FastScale)
+    def draw(canvas: Canvas) = {
+      canvas.draw(rect).overlay(image1, rect.x, rect.y)
+
+    }
+
+
+}
+
 sealed trait LongItem extends CustomDrawable {
   override val imgFont = new JFont("Sans-seriff", 1, 14)
 }

@@ -16,16 +16,21 @@ class ScrimageFunTests extends FlatSpec {
   //   Transformations.devicesForUsers()
   // }
 
-  "scrimage" should "overlay 1 image on another" in {
+  // "scrimage" should "overlay 1 image on another" in {
+  //   import ammonite.ops._
+  //   implicit val wd: ammonite.ops.Path = cwd / "OriginalImages"
+  //   val img1 = (wd / "rollercoaster_ride.jpg").toIO
+  //   val img2 = (wd / "SARAnight.jpg").toIO
+  //   val generatedImages: ammonite.ops.Path = cwd / "GeneratedImages"
+  //   val compositeImage  = ScrimageFun.compositeImages(img1, img2)
+  // }
+
+  "scrimage" should "put an image in a box" in {
     import ammonite.ops._
     implicit val wd: ammonite.ops.Path = cwd / "OriginalImages"
     val img1 = (wd / "rollercoaster_ride.jpg").toIO
-    val img2 = (wd / "SARAnight.jpg").toIO
     val generatedImages: ammonite.ops.Path = cwd / "GeneratedImages"
-    val compositeImage  = ScrimageFun.compositeImages(img1, img2)
-    import com.sksamuel.scrimage.nio.JpegWriter
-    val compositeOutFile = generatedImages / "composite.jpg"
-    // compositeImage.output(compositeOutFile.toIO)(JpegWriter())
+    val compositeImage  = ScrimageFun.putImgInBox(img1)
   }
 
 }

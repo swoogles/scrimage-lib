@@ -63,14 +63,34 @@ object ScrimageFun extends TextDrawing with FileSystemOperations {
   
   def compositeImages(file1: java.io.File, file2: java.io.File) = {
     import com.sksamuel.scrimage.composite.OverlayComposite
-  val image1 = Image.fromFile(file1)
-  val image2 = Image.fromFile(file2)
-  val composed = image2.composite(new OverlayComposite(.8), image1)
+    val image1 = Image.fromFile(file1)
+    val image2 = Image.fromFile(file2)
+    val composed = image2.composite(new OverlayComposite(.8), image1)
     import ammonite.ops._
     val generatedImages: ammonite.ops.Path = cwd / "GeneratedImages"
     val compositeOutFile = generatedImages / "composite.jpg"
     composed.output(compositeOutFile.toIO)(JpegWriter())
   }
+
+  def putImgInBox(file1: java.io.File) = {
+    val img: Canvas = Image(1400, 800)
+      .fit(1400, 800, Color.Black)
+
+    import com.sksamuel.scrimage.composite.OverlayComposite
+    import com.sksamuel.scrimage.composite._
+    val image1 = Image.fromFile(file1)
+      .scaleTo(50,50, FastScale)
+    val composed =
+      // img.composite(new AverageComposite(.1), image1)
+    img.overlay(image1, 300, 300)
+      // image1.composite(new OverlayComposite(1.0), img)
+    import ammonite.ops._
+    val generatedImages: ammonite.ops.Path = cwd / "GeneratedImages"
+    val compositeOutFile = generatedImages / "composite.jpg"
+    composed.output(compositeOutFile.toIO)(JpegWriter())
+  }
+
+
 
 
   val borderFunc: (Image=>Image) = (imgInner) => {

@@ -26,6 +26,10 @@ object Transformations extends TextDrawing with FileSystemOperations {
   }
 
   def multiImageGeneratingFunction( imgName: String)( imgProducer: Image => List[Image]) = {
+        import ammonite.ops._
+        // import ammonite.ops.ImplicitWd._
+        implicit val wd: ammonite.ops.Path = cwd / "GeneratedImages"
+        val res = %%('convert, "-delay", "120", "-loop", "0", s"${imgName}*.jpg", s"$imgName.gif")
     val finalImages = imgProducer(blankImg)
 
     finalImages.zipWithIndex.foreach { case(finalImage, idx) =>
@@ -158,7 +162,7 @@ object Transformations extends TextDrawing with FileSystemOperations {
       remainingUsers.map(_.text)  ::: remainingUsers.map(_.rect) ::: makeTextDrawable(locationMap, 200, 200)
     }
 
-    val user_devices_pretty_representation: List[String] = pprint.stringify(user_devices, width=40).split("\n").toList
+    val user_devices_pretty_representation: List[String] = pprint.stringify(user_devices, width=30).split("\n").toList
     val user_devices_drawables: List[Drawable] = makeTextDrawable(user_devices_pretty_representation, 200, 500)
       
 

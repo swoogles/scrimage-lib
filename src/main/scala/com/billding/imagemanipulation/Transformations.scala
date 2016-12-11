@@ -99,7 +99,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   }
 
-  def mapOverImages(imgFile: java.io.File) = imageGeneratingFunction("map_with_images") { img =>
+  def mapOverImages(imgFile: java.io.File) = imageGeneratingFunction("list_of_" + imgFile.getName().takeWhile(_ != ".") ) { img =>
 
     val typedItems = Range(1, 11).map { curIdx =>
       ImgDrawable(
@@ -109,34 +109,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       )
     }.toList
 
-
-     // val accumulator = NumericalListItem(smallRectangleAt(x=50, y=50), 0)
-
-     // val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
-     //   case ((acc, remainingItems), nextItem) => 
-     //     (
-     //       acc
-     //         .copy(
-     //         rect=acc.rect.copy(
-     //           y=acc.rect.y+75
-     //         ),
-     //         value=acc.value+nextItem.value
-     //       ), 
-     //       remainingItems.tail.map(li=>
-     //           li.copy(
-     //             rect=li.rect.copy(
-     //               y=li.rect.y+75
-     //             )
-     //           )
-     //         )
-     //       )
-     // }
-
      typedItems.foldLeft(img) {
         case (curImg: Image, li: ImgDrawable) => li.draw(curImg)
      }
 
   }
+
+
 
   def phoneNumbersMultiStage() = multiImageGeneratingFunction("phone_folding") { img =>
     val areaCodesAndStates = Map(

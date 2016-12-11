@@ -115,6 +115,46 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   }
 
+  def multistageImages() = imageGeneratingFunction("tomato_growing") { img =>
+    implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
+    val img1 = (wd / "single_seed.png").toIO
+    val img2 = (wd / "dirt_pile.jpg").toIO
+    val img3 = (wd / "seedling.jpg").toIO
+    val img4 = (wd / "sapling.jpg").toIO
+
+    val seeds = Range(1, 11).map { curIdx =>
+      ImgDrawable(
+        smallRectangleAt(x=200+75*curIdx, y=50) ,
+        // curIdx // Ascending values
+        img1
+      )
+    }.toList
+
+    val dirtPiles = seeds.map{ seed =>
+      val rect = seed.rect
+      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
+      seed.copy(rect = nextRect, imgFile = img2)
+    }
+
+    val seedlings = dirtPiles.map{ dirtPile =>
+      val rect = dirtPile.rect
+      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
+      dirtPile.copy(rect = nextRect, imgFile = img3)
+    }
+
+    val saplings = seedlings.map{ seedling =>
+      val rect = seedling.rect
+      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
+      seedling.copy(rect = nextRect, imgFile = img4)
+    }
+
+
+    val allStages = seeds ::: dirtPiles ::: seedlings ::: saplings
+     allStages.foldLeft(img) {
+        case (curImg: Image, li: ImgDrawable) => li.draw(curImg)
+     }
+
+  }
 
 
   def phoneNumbersMultiStage() = multiImageGeneratingFunction("phone_folding") { img =>

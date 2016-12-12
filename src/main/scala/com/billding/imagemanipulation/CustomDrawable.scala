@@ -27,46 +27,27 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
   import com.sksamuel.scrimage.canvas.Canvas
   val image1 = Image.fromFile(imgFile)
     .scaleTo(rect.width,rect.height, FastScale)
+
     def draw(canvas: Canvas) = {
       canvas.draw(rect).overlay(image1, rect.x, rect.y)
-
     }
+
+  def onNextRow = {
+    val nextRect = rect.copy(y=rect.y+75)
+    copy(rect = nextRect)
+  }
 
   def nextStageOpt(img: java.io.File) = {
     val rand = new scala.util.Random
     if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
-      val nextRect = rect.copy(y=rect.y+75)
-      Some(copy(rect = nextRect, imgFile = img))
+      Some(onNextRow.copy(imgFile = img))
     } else None
   }
 
   def nextStageList(img: java.io.File) = {
-    val rand = new scala.util.Random
-    val nextRect = rect.copy(y=rect.y+75)
-    List.fill(3)(copy(rect = nextRect, imgFile = img))
+    List.fill(3)(onNextRow.copy(imgFile = img))
   }
 
-}
-
-object ImgDrawable {
-  def spaceRow( imgItems: List[ImgDrawable] ): List[ImgDrawable] = {
-    val (head :: tail) = imgItems
-    val x = head.rect.x
-    val y = head.rect.y
-    val (finalRect, spacedList: List[ImgDrawable]) = tail.fold((head.rect, List(head): List[ImgDrawable])) { case ((lastRect: Rect, accItems: List[_]), nextItem: ImgDrawable) =>
-      val newRect = nextItem.rect.copy(x = lastRect.x + lastRect.width + 10)
-      val itemWithUpdatedPos = nextItem.copy(rect=newRect)
-      // nextItem.
-      (newRect, accItems :+ itemWithUpdatedPos)
-
-      case other => 
-        println("Unrecognized line:")
-        println(other)
-        other
-    }
-    spacedList
-
-  }
 }
 
 object CustomDrawable {
@@ -74,20 +55,15 @@ object CustomDrawable {
     val (head :: tail) = imgItems
     val x = head.rect.x
     val y = head.rect.y
-    val (finalRect, spacedList: List[Rect]) = tail.fold((head.rect, List(head.rect): List[Rect])) { case ((lastRect: Rect, accItems: List[_]), nextItem: CustomDrawable) =>
+    val (finalRect, spacedList: List[Rect]) = tail.fold((head.rect, List(head.rect))) { case ((lastRect: Rect, accItems: List[Rect]), nextItem: CustomDrawable) =>
       val newRect = nextItem.rect.copy(x = lastRect.x + lastRect.width + 10)
-      // val itemWithUpdatedPos = nextItem.copy(rect=newRect)
-      // nextItem.
       (newRect, accItems :+ newRect)
 
-      case other => 
-        println("Unrecognized line:")
-        println(other)
-        other
     }
     spacedList
 
   }
+
 }
 
 sealed trait LongItem extends TextDrawable {
@@ -96,6 +72,12 @@ sealed trait LongItem extends TextDrawable {
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {
   val content = value.toString
+
+  def onNextRow = {
+    val nextRect = rect.copy(y=rect.y+75)
+    copy(rect = nextRect)
+  }
+
 }
 
 case class ListItem(rect: Rect, label: Char, value: Int = 1) extends TextDrawable {

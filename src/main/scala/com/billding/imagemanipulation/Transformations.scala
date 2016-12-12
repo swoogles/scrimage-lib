@@ -59,35 +59,30 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   def foldSummationImage() = multiImageGeneratingFunction("rectangles") { img =>
 
-    val typedItems = Range(1, 11).map { curIdx =>
-      NumericalListItem(
-        smallRectangleAt(x=200+75*curIdx, y=50) ,
-        // curIdx // Ascending values
-        1 // Constant value
-      )
-    }.toList
+    val typedItemsUnspaced = 
+      List.fill(11) {
+        NumericalListItem(
+          smallRectangleAt(x=200, y=50) ,
+          1 // Constant value
+        )
+      }
+
+    val itemRectangles = 
+      CustomDrawable.spaceRow(typedItemsUnspaced)
+
+    val typedItems = typedItemsUnspaced.zip(itemRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
 
      val accumulator = NumericalListItem(smallRectangleAt(x=50, y=50), 0)
 
      val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
-       case ((acc, remainingItems), nextItem) => 
+       case ((acc: NumericalListItem, remainingItems: List[NumericalListItem]), nextItem: NumericalListItem) => 
          (
            acc
-             .copy(
-             rect=acc.rect.copy(
-               y=acc.rect.y+75
-             ),
-             value=acc.value+nextItem.value
-           ), 
-           remainingItems.tail.map(li=>
-               li.copy(
-                 rect=li.rect.copy(
-                   y=li.rect.y+75
-                 )
-               )
-             )
-           )
+             .onNextRow
+             .copy( value=acc.value+nextItem.value), 
+           remainingItems.tail.map(_.onNextRow)
+         )
      }
 
     val stagedDrawables: List[List[TextDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
@@ -96,21 +91,6 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         case (curImg: Image, li: TextDrawable) => curImg.draw(li.rect).draw(li.text)
       }
     }
-
-  }
-
-  def mapOverImages(imgFile: java.io.File) = imageGeneratingFunction("list_of_" + imgFile.getName().takeWhile(_ != ".") ) { img =>
-
-    val typedItems = Range(1, 11).map { curIdx =>
-      ImgDrawable(
-        smallRectangleAt(x=200+75*curIdx, y=50) ,
-        imgFile
-      )
-    }.toList
-
-     typedItems.foldLeft(img) {
-        case (curImg: Image, li: ImgDrawable) => li.draw(curImg)
-     }
 
   }
 
@@ -135,7 +115,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val spacedSeedRectangles = 
       CustomDrawable.spaceRow(seedsUnspaced)
 
-    val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
+    val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{
+      case (seed, newRect) => seed.copy(rect=newRect) }
 
 
     val dirtPiles = seeds
@@ -154,7 +135,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       .flatMap{ _.nextStageList(img6) }
 
 
-    val tomatoesSpaced: List[ImgDrawable] = ImgDrawable.spaceRow(tomatoes)
+    val tomatoesSpacedRectangles: List[Rect] = CustomDrawable.spaceRow(tomatoes)
+    val tomatoesSpaced: List[ImgDrawable]  = tomatoes.zip(tomatoesSpacedRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
     val stageImages = List(
       seeds,

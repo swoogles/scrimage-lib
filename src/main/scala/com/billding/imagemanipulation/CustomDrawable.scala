@@ -27,6 +27,36 @@ sealed trait TextDrawable extends CustomDrawable {
 
 }
 
+sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
+  import pprint.Config
+  val x: Int
+  val y: Int
+  override implicit val pprintConfig = Config()
+
+  val rect: Rect =
+    Rect(x=x, y=y, width=50, height=50, rectangleConfig )
+  val content: Iterable[_]
+  override val imgFont = new JFont("Sans-seriff", 1, 28)
+
+  def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
+  val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
+
+  override def draw(canvas: Canvas): Canvas = {
+    drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
+      curCanvas.draw(nextText) 
+    }
+  }
+
+}
+
+case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable {
+  println("TextualDataStructure raw content: ")
+  println(content)
+  println("TextualDataStructure pretty content: ")
+  textLines foreach println
+  pprint.pprintln(content, width=40)
+}
+
 case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
   import com.sksamuel.scrimage.ScaleMethod.FastScale

@@ -40,6 +40,7 @@ sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
 
   def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
   val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
+  drawableTextLines.map { text=>text.x }
 
   override def draw(canvas: Canvas): Canvas = {
     drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
@@ -67,10 +68,10 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
   }
 
   def nextStageOpt(img: java.io.File) = {
-    val rand = new scala.util.Random
-    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
+    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 )
       Some(onNextRow.copy(imgFile = img))
-    } else None
+    else 
+      None
   }
 
   def nextStageList(img: java.io.File) = {
@@ -94,7 +95,6 @@ object CustomDrawable {
         }
         case textDrawable: TextDrawable => textDrawable match {
           case nli: NumericalListItem => nli.copy(rect=newRect).asInstanceOf[T]
-          case li: ListItem => li.copy(rect=newRect).asInstanceOf[T]
           case pli: PhoneNumberListItem => pli.copy(rect=newRect).asInstanceOf[T]
         }
         case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect).asInstanceOf[T]
@@ -116,16 +116,6 @@ case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {
     copy(rect = nextRect)
   }
 
-}
-
-case class ListItem(rect: Rect, label: Char, value: Int = 1) extends TextDrawable {
-  val content = label.toString
-  override val text =
-       Text(label.toString, rect.x+15, rect.y+30, { g2 =>
-         g2.setColor(JColor.BLUE)
-         g2.setBackground(JColor.WHITE)
-         g2.setFont(imgFont)
-       })
 }
 
 case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends TextDrawable {

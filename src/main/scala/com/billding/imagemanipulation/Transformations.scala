@@ -3,29 +3,10 @@ package imagemanipulation
 import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.Color
 import com.sksamuel.scrimage.Image
-import java.awt.{Color => JColor}
-
-import com.sksamuel.scrimage.canvas.Canvas._
-import com.sksamuel.scrimage.canvas.Font
-
-import com.sksamuel.scrimage.canvas.drawable.Rect
-import com.sksamuel.scrimage.canvas.Drawable
-import com.sksamuel.scrimage.canvas.drawable.Text
-
-trait BoundaryBoxes extends TextDrawing {
-  protected val rectangleConfig = { g2: java.awt.Graphics2D =>
-      g2.setColor(JColor.GREEN)
-      g2.setFont(imgFont)
-    }
-
-  protected def smallRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=50, height=50, rectangleConfig )
-
-  protected def wideRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=150, height=50, rectangleConfig )
-
-}
 
 object Transformations extends TextDrawing with FileSystemOperations with BoundaryBoxes {
-  import ammonite.ops._
+  import ammonite.ops.%
+  import ammonite.ops.cwd
 
   val IMG_HEIGHT = 800
   val IMG_WIDTH = 1400
@@ -73,8 +54,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val typedItemsUnspaced = 
       List.fill(11) {
         NumericalListItem(
-          smallRectangleAt(x=200, y=50) ,
-          1 // Constant value
+          smallRectangleAt(x=200, y=50),
+          1
         )
       }
 
@@ -97,12 +78,17 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   def tomatoGrowing() = multiStageImages("tomato_growing") { img =>
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
-    val img1 = (wd / "single_seed.png").toIO
-    val img2 = (wd / "dirt_pile.jpg").toIO
-    val img3 = (wd / "seedling.jpg").toIO
-    val img4 = (wd / "sapling.jpg").toIO
-    val img5 = (wd / "grown_plant.jpg").toIO
-    val img6 = (wd / "tomato.jpg").toIO
+    def demoImage(imgName: String) = (wd / imgName).toIO
+
+    val actions: List[( String, ImgDrawable => Iterable[ImgDrawable])] = List(
+      ("single_seed.png", { imgDrawable => imgDrawable.nextStageOpt(demoImage("single_seed.png")) })
+    )
+    val img1 = demoImage("single_seed.png")
+    val img2 = demoImage("dirt_pile.jpg")
+    val img3 = demoImage("seedling.jpg")
+    val img4 = demoImage("sapling.jpg")
+    val img5 = demoImage("grown_plant.jpg")
+    val img6 = demoImage("tomato.jpg")
     
 
     val seedsUnspaced = 

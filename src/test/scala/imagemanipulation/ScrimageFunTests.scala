@@ -14,9 +14,9 @@ class ScrimageFunTests extends FlatSpec {
   //   Transformations.phoneNumbersMultiStage()
   // }
 
-  // "scrimage" should "create user->devices fold image" in {
-  //   Transformations.devicesForUsers()
-  // }
+  "scrimage" should "create user->devices fold image" in {
+    Transformations.devicesForUsers()
+  }
 
   // "scrimage" should "overlay 1 image on another" in {
   //   import ammonite.ops._
@@ -32,9 +32,9 @@ class ScrimageFunTests extends FlatSpec {
   // }
 
 
-  "scrimage" should "draw all tomatos stages on one image" in {
-    val compositeImage  = Transformations.multistageImages()
-  }
+  // "scrimage" should "draw all tomatos stages on one image" in {
+  //   val compositeImage  = Transformations.tomatoGrowing()
+  // }
 
 
 

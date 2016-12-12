@@ -78,9 +78,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         )
       }
 
-    val itemRectangles = CustomDrawable.spaceRow(typedItemsUnspaced)
-    val typedItems = typedItemsUnspaced.zip(itemRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
-
+    val typedItems = CustomDrawable.spaceRow(typedItemsUnspaced)
 
      val accumulator = NumericalListItem(smallRectangleAt(x=50, y=50), 0)
 
@@ -97,7 +95,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     foldingSummation.map { tup => tup._1 +: tup._2 }
   }
 
-  def multistageImages() = multiStageImages("tomato_growing") { img =>
+  def tomatoGrowing() = multiStageImages("tomato_growing") { img =>
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
     val img1 = (wd / "single_seed.png").toIO
     val img2 = (wd / "dirt_pile.jpg").toIO
@@ -115,11 +113,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
           )
         }
 
-    val seeds = CustomDrawable.spaceRowComplete(seedsUnspaced)
-    // val spacedSeedRectangles = CustomDrawable.spaceRow(seedsUnspaced)
-    // val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{
-    //   case (seed, newRect) => seed.copy(rect=newRect) }
-
+    val seeds = CustomDrawable.spaceRow(seedsUnspaced)
 
     val dirtPiles = seeds
       .flatMap{ _.nextStageOpt(img2) }
@@ -137,8 +131,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       .flatMap{ _.nextStageList(img6) }
 
 
-    val tomatoesSpacedRectangles: List[Rect] = CustomDrawable.spaceRow(tomatoes)
-    val tomatoesSpaced: List[ImgDrawable]  = tomatoes.zip(tomatoesSpacedRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
+    val tomatoesSpaced: List[ImgDrawable] = CustomDrawable.spaceRow(tomatoes)
 
     val stageImages = List(
       seeds,
@@ -175,8 +168,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         wideRectangleAt(x=200, y=50)
       )
     }
-    val typedPhoneNumbersRectangles = CustomDrawable.spaceRow(typedPhoneNumbersUnspaced)
-    val typedPhoneNumbers = typedPhoneNumbersUnspaced.zip(typedPhoneNumbersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
+    val typedPhoneNumbers = CustomDrawable.spaceRow(typedPhoneNumbersUnspaced)
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
@@ -187,7 +179,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
       }
 
-    locationFoldingWithRemaining.zipWithIndex.map { case((currentLocations, remainingNumbers), idx) =>
+    locationFoldingWithRemaining.map { case(currentLocations, remainingNumbers) =>
       val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/2, currentLocations)
       textualDataStructure :: remainingNumbers
     }
@@ -214,8 +206,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         wideRectangleAt(x=200, y=50)
       )
     }
-    val typedUsersRectangles = CustomDrawable.spaceRow(typedUsersUnspaced)
-    val typedUsers = typedUsersUnspaced.zip(typedUsersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
+
+    val typedUsers = CustomDrawable.spaceRow(typedUsersUnspaced)
 
     val organizedNumbers = List[String]()
 
@@ -225,7 +217,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
 
     val devicesDataStore = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT * 5 / 8, user_devices)
-    devicesWithRemainingUsers.zipWithIndex.map { case((currentLocations, remainingUsers), idx) =>
+    devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }

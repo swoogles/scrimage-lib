@@ -80,23 +80,10 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
 }
 
 object CustomDrawable {
-  def spaceRow( imgItems: List[CustomDrawable] ): List[Rect] = {
-    val (head :: tail) = imgItems
-    val x = head.rect.x
-    val y = head.rect.y
-    val (finalRect, spacedList: List[Rect]) = tail.fold((head.rect, List(head.rect))) { case ((lastRect: Rect, accItems: List[Rect]), nextItem: CustomDrawable) =>
-      val newRect = nextItem.rect.copy(x = lastRect.x + lastRect.width + 10)
-      (newRect, accItems :+ newRect)
-
-    }
-    spacedList
-
-  }
-
   /*
    TODO: Figure out how to accomplish this without all the casting
    */
-  def spaceRowComplete[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
+  def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
       val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)

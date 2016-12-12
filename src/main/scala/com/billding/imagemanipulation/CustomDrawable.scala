@@ -5,7 +5,7 @@ import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.drawable.Text
 import com.sksamuel.scrimage.canvas.Canvas
 
-trait CustomDrawable {
+sealed trait CustomDrawable {
   val rect: Rect
   def draw(canvas: Canvas): Canvas
 }
@@ -49,13 +49,7 @@ sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
 
 }
 
-case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable {
-  println("TextualDataStructure raw content: ")
-  println(content)
-  println("TextualDataStructure pretty content: ")
-  textLines foreach println
-  pprint.pprintln(content, width=40)
-}
+case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable
 
 case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
@@ -63,9 +57,9 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
   val image1 = Image.fromFile(imgFile)
     .scaleTo(rect.width,rect.height, FastScale)
 
-    override def draw(canvas: Canvas) = {
-      canvas.draw(rect).overlay(image1, rect.x, rect.y)
-    }
+  override def draw(canvas: Canvas) = {
+    canvas.draw(rect).overlay(image1, rect.x, rect.y)
+  }
 
   def onNextRow = {
     val nextRect = rect.copy(y=rect.y+75)
@@ -99,10 +93,32 @@ object CustomDrawable {
 
   }
 
-}
+  /*
+   TODO: Figure out how to accomplish this without all the casting
+   */
+  def spaceRowComplete[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
+    val (head :: tail) = imgItems
+    val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
+      val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
+      // val newItem = nextItem.copy(rect=newRect)
+      val newItem: T = head match {
+        case pprintable: PprintTextDrawable => pprintable match {
+          case textual: TextualDataStructure => textual.copy(x=newRect.x, y=newRect.y).asInstanceOf[T]
+        }
+        case textDrawable: TextDrawable => textDrawable match {
+          case nli: NumericalListItem => nli.copy(rect=newRect).asInstanceOf[T]
+          case li: ListItem => li.copy(rect=newRect).asInstanceOf[T]
+          case pli: PhoneNumberListItem => pli.copy(rect=newRect).asInstanceOf[T]
+        }
+        case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect).asInstanceOf[T]
+      }
+      (newItem, accItems :+ newItem)
 
-sealed trait LongItem extends TextDrawable {
-  override val imgFont = new JFont("Sans-seriff", 1, 14)
+    }
+    spacedList
+
+  }
+
 }
 
 case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {

@@ -10,9 +10,9 @@ class ScrimageFunTests extends FlatSpec {
   //   Transformations.foldSummationImage()
   // }
 
-  "scrimage" should "create phone number fold demo image" in {
-    Transformations.phoneNumbersMultiStage()
-  }
+  // "scrimage" should "create phone number fold demo image" in {
+  //   Transformations.phoneNumbersMultiStage()
+  // }
 
   // "scrimage" should "create user->devices fold image" in {
   //   Transformations.devicesForUsers()
@@ -32,9 +32,9 @@ class ScrimageFunTests extends FlatSpec {
   // }
 
 
-  // "scrimage" should "draw all tomatos stages on one image" in {
-  //   val compositeImage  = Transformations.multistageImages()
-  // }
+  "scrimage" should "draw all tomatos stages on one image" in {
+    val compositeImage  = Transformations.multistageImages()
+  }
 
 
 

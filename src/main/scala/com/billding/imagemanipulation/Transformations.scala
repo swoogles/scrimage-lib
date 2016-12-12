@@ -46,12 +46,16 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
   }
 
-  def multiImageGeneratingFunction( imgName: String)( imgProducer: Image => List[Image]) = {
-    val finalImages = imgProducer(blankImg)
+  def multiStageImages( imgName: String)( imgProducer: Image => List[List[CustomDrawable]]) = {
+    val shapeLists: List[List[CustomDrawable]] = imgProducer(blankImg)
 
-    finalImages.zipWithIndex.foreach { case(finalImage, idx) =>
+    val stagedImages: List[Image] = drawMultipleImages(blankImg, shapeLists)
+
+    stagedImages.zipWithIndex.foreach { case(finalImage, idx) =>
       val numberedImgName = s"${imgName}_$idx"
-      imageGeneratingFunction(numberedImgName){ (blankImg)=>finalImage }
+      imageGeneratingFunction(numberedImgName){ (blankImg)=>
+        finalImage 
+      }
     }
     createGif(imgName)
   }
@@ -64,7 +68,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
   }
 
-  def foldSummationImage() = multiImageGeneratingFunction("rectangles") { img =>
+  def foldSummationImage() = multiStageImages("rectangles") { img =>
 
     val typedItemsUnspaced = 
       List.fill(11) {
@@ -74,9 +78,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         )
       }
 
-    val itemRectangles = 
-      CustomDrawable.spaceRow(typedItemsUnspaced)
-
+    val itemRectangles = CustomDrawable.spaceRow(typedItemsUnspaced)
     val typedItems = typedItemsUnspaced.zip(itemRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
 
@@ -92,12 +94,10 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
          )
      }
 
-    val stagedDrawables: List[List[TextDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
-    drawMultipleImages(img, stagedDrawables)
-
+    foldingSummation.map { tup => tup._1 +: tup._2 }
   }
 
-  def multistageImages() = multiImageGeneratingFunction("tomato_growing") { img =>
+  def multistageImages() = multiStageImages("tomato_growing") { img =>
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
     val img1 = (wd / "single_seed.png").toIO
     val img2 = (wd / "dirt_pile.jpg").toIO
@@ -115,11 +115,10 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
           )
         }
 
-    val spacedSeedRectangles = 
-      CustomDrawable.spaceRow(seedsUnspaced)
-
-    val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{
-      case (seed, newRect) => seed.copy(rect=newRect) }
+    val seeds = CustomDrawable.spaceRowComplete(seedsUnspaced)
+    // val spacedSeedRectangles = CustomDrawable.spaceRow(seedsUnspaced)
+    // val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{
+    //   case (seed, newRect) => seed.copy(rect=newRect) }
 
 
     val dirtPiles = seeds
@@ -150,15 +149,14 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       tomatoesSpaced
     )
 
-    val cumulativeStageImages = stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>
+    stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>
       acc ::: nextImages
     }
 
-    drawMultipleImages(img, cumulativeStageImages)
   }
 
 
-  def phoneNumbersMultiStage() = multiImageGeneratingFunction("phone_folding") { img =>
+  def phoneNumbersMultiStage() = multiStageImages("phone_folding") { img =>
     val areaCodesAndStates = Map(
       "801"->"UT",
       "970"->"CO"
@@ -178,39 +176,25 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       )
     }
     val typedPhoneNumbersRectangles = CustomDrawable.spaceRow(typedPhoneNumbersUnspaced)
-
     val typedPhoneNumbers = typedPhoneNumbersUnspaced.zip(typedPhoneNumbersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
-    val locationFoldingWithRemaining: List[(Map[String,List[String]], List[PhoneNumberListItem])] = typedPhoneNumbers.scanLeft((organizedNumbers, typedPhoneNumbers)){ case ((sortedNumbers, remainingNumbers), li) =>
+    val locationFoldingWithRemaining: List[(Map[String,List[String]], List[PhoneNumberListItem])] =
+      typedPhoneNumbers.scanLeft((organizedNumbers, typedPhoneNumbers)){ case ((sortedNumbers, remainingNumbers), li) =>
+        val region = areaCodesAndStates.get(li.phoneNumber.take(3)).getOrElse("UNKNOWN")
+        val neighboringEntries = sortedNumbers(region)
+        (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
+      }
 
-      val region = areaCodesAndStates.get(li.phoneNumber.take(3)).getOrElse("UNKNOWN")
-      val neighboringEntries = sortedNumbers(region)
-      (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
-    }
-
-    val foldedLocationDrawablesWithRemaining: List[List[CustomDrawable]] = locationFoldingWithRemaining.zipWithIndex.map { case((currentLocations, remainingNumbers), idx) =>
-      val locationMap = pprint.stringify(currentLocations, width=40).split("\n").toList
-      println("locationMap: ")
-      locationMap foreach println
+    locationFoldingWithRemaining.zipWithIndex.map { case((currentLocations, remainingNumbers), idx) =>
       val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/2, currentLocations)
-      val textDrawables: List[CustomDrawable] = textualDataStructure :: remainingNumbers
-      remainingNumbers.map(_.text)  ::: remainingNumbers.map(_.rect) ::: makeTextDrawable(locationMap, IMG_WIDTH/7, IMG_HEIGHT/2)
-      textDrawables
+      textualDataStructure :: remainingNumbers
     }
-
-    drawMultipleImages(img, foldedLocationDrawablesWithRemaining)
-
-    // foldedLocationDrawablesWithRemaining.map { currentDrawables =>
-    //   currentDrawables.foldLeft(img){
-    //     case (curImg: Image, li: Drawable) => curImg.draw(li)
-    //   }
-    // }
 
   }
 
-  def devicesForUsers() = multiImageGeneratingFunction("user_devices") { img =>
+  def devicesForUsers() = multiStageImages("user_devices") { img =>
 
     val users = List(
       "Bill Frasure",
@@ -231,7 +215,6 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       )
     }
     val typedUsersRectangles = CustomDrawable.spaceRow(typedUsersUnspaced)
-
     val typedUsers = typedUsersUnspaced.zip(typedUsersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
     val organizedNumbers = List[String]()
@@ -241,22 +224,10 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       (sortedNumbers ::: userDevices, remainingUsers.tail)
     }
 
-    val foldedLocationDrawablesWithRemaining: List[List[Drawable]] = devicesWithRemainingUsers.zipWithIndex.map { case((currentLocations, remainingUsers), idx) =>
-      val locationMap = pprint.stringify(currentLocations, width=40).split("\n").toList
-      remainingUsers.map(_.text)  ::: remainingUsers.map(_.rect) ::: makeTextDrawable(locationMap, IMG_WIDTH/7, IMG_HEIGHT/4)
-    }
-
-    val user_devices_pretty_representation: List[String] = pprint.stringify(user_devices, width=30).split("\n").toList
-    val user_devices_drawables: List[Drawable] = makeTextDrawable(user_devices_pretty_representation, IMG_WIDTH/7, IMG_HEIGHT * 5 / 8)
-      
-
-    // This makeks the DB rep display on one slide by itself. What I really need to do is add this to all the other lists.
-    // val drawablesWithDBRepresentation: List[List[Drawable]] =  :: foldedLocationDrawablesWithRemaining
-
-    foldedLocationDrawablesWithRemaining.map { currentDrawables =>
-      (currentDrawables ::: user_devices_drawables).foldLeft(img){
-        case (curImg: Image, li: Drawable) => curImg.draw(li)
-      }
+    val devicesDataStore = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT * 5 / 8, user_devices)
+    devicesWithRemainingUsers.zipWithIndex.map { case((currentLocations, remainingUsers), idx) =>
+      val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
+      devicesDataStore :: textualDataStructure :: remainingUsers
     }
 
   }

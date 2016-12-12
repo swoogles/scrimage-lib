@@ -37,6 +37,33 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) {
     } else None
   }
 
+  def nextStageList(img: java.io.File) = {
+    val rand = new scala.util.Random
+    val nextRect = rect.copy(y=rect.y+75)
+    List.fill(3)(copy(rect = nextRect, imgFile = img))
+  }
+
+}
+
+object ImgDrawable {
+  def spaceRow( imgItems: List[ImgDrawable] ): List[ImgDrawable] = {
+    val (head :: tail) = imgItems
+    val x = head.rect.x
+    val y = head.rect.y
+    val (finalRect, spacedList: List[ImgDrawable]) = tail.fold((head.rect, List(head): List[ImgDrawable])) { case ((lastRect: Rect, accItems: List[_]), nextItem: ImgDrawable) =>
+      val newRect = nextItem.rect.copy(x = lastRect.x + lastRect.width + 10)
+      val itemWithUpdatedPos = nextItem.copy(rect=newRect)
+      // nextItem.
+      (newRect, accItems :+ itemWithUpdatedPos)
+
+      case other => 
+        println("Unrecognized line:")
+        println(other)
+        other
+    }
+    spacedList
+
+  }
 }
 
 sealed trait LongItem extends CustomDrawable {

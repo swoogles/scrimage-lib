@@ -114,12 +114,15 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   }
 
-  def multistageImages() = imageGeneratingFunction("tomato_growing") { img =>
+  def multistageImages() = multiImageGeneratingFunction("tomato_growing") { img =>
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
     val img1 = (wd / "single_seed.png").toIO
     val img2 = (wd / "dirt_pile.jpg").toIO
     val img3 = (wd / "seedling.jpg").toIO
     val img4 = (wd / "sapling.jpg").toIO
+    val img5 = (wd / "grown_plant.jpg").toIO
+    val img6 = (wd / "tomato.jpg").toIO
+    
 
     val seeds = Range(1, 11).toList.map { curIdx =>
       ImgDrawable(
@@ -137,11 +140,33 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val saplings = seedlings
       .flatMap{ _.nextStageOpt(img4) }
 
+    val plants = saplings
+      .flatMap{ _.nextStageOpt(img5) }
 
-    val allStages = seeds ::: dirtPiles ::: seedlings ::: saplings
-     allStages.foldLeft(img) {
+    val tomatoes: List[ImgDrawable] = plants
+      .flatMap{ _.nextStageList(img6) }
+
+
+    val tomatoesSpaced: List[ImgDrawable] = ImgDrawable.spaceRow(tomatoes)
+
+    val stageImages = List(
+      seeds,
+      dirtPiles,
+      seedlings,
+      saplings,
+      plants,
+      tomatoesSpaced
+    )
+
+    val cumulativeStageImages = stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>
+      acc ::: nextImages
+    }
+
+    cumulativeStageImages.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
         case (curImg: Image, li: ImgDrawable) => li.draw(curImg)
-     }
+      }
+    }
 
   }
 

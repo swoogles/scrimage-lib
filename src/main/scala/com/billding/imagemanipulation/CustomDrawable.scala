@@ -3,9 +3,11 @@ package imagemanipulation
 import java.awt.{Color => JColor, Font => JFont, Image => JImage}
 import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.drawable.Text
+import com.sksamuel.scrimage.canvas.Canvas
 
 trait CustomDrawable {
   val rect: Rect
+  def draw(canvas: Canvas): Canvas
 }
 
 sealed trait TextDrawable extends CustomDrawable {
@@ -19,16 +21,19 @@ sealed trait TextDrawable extends CustomDrawable {
          g2.setFont(imgFont)
        })
 
+  override def draw(canvas: Canvas): Canvas = {
+    canvas.draw(rect).draw(text)
+  }
+
 }
 
 case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
   import com.sksamuel.scrimage.ScaleMethod.FastScale
-  import com.sksamuel.scrimage.canvas.Canvas
   val image1 = Image.fromFile(imgFile)
     .scaleTo(rect.width,rect.height, FastScale)
 
-    def draw(canvas: Canvas) = {
+    override def draw(canvas: Canvas) = {
       canvas.draw(rect).overlay(image1, rect.x, rect.y)
     }
 

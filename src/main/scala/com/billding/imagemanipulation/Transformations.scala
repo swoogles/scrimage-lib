@@ -56,6 +56,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     createGif(imgName)
   }
 
+  private def drawMultipleImages(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
+    stagedDrawables.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
+        case (curImg: Image, li: TextDrawable) => li.draw(curImg)
+      }
+    }
+  }
 
   def foldSummationImage() = multiImageGeneratingFunction("rectangles") { img =>
 
@@ -86,11 +93,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
      }
 
     val stagedDrawables: List[List[TextDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
-    stagedDrawables.map { currentDrawables =>
-      currentDrawables.foldLeft(img){
-        case (curImg: Image, li: TextDrawable) => curImg.draw(li.rect).draw(li.text)
-      }
-    }
+    drawMultipleImages(img, stagedDrawables)
 
   }
 
@@ -151,12 +154,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       acc ::: nextImages
     }
 
-    cumulativeStageImages.map { currentDrawables =>
-      currentDrawables.foldLeft(img){
-        case (curImg: Image, li: ImgDrawable) => li.draw(curImg)
-      }
-    }
-
+    drawMultipleImages(img, cumulativeStageImages)
   }
 
 
@@ -248,8 +246,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     // val drawablesWithDBRepresentation: List[List[Drawable]] =  :: foldedLocationDrawablesWithRemaining
 
     foldedLocationDrawablesWithRemaining.map { currentDrawables =>
-      (currentDrawables ::: user_devices_drawables)
-      .foldLeft(img){
+      (currentDrawables ::: user_devices_drawables).foldLeft(img){
         case (curImg: Image, li: Drawable) => curImg.draw(li)
       }
     }

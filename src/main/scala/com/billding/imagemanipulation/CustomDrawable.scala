@@ -4,9 +4,12 @@ import java.awt.{Color => JColor, Font => JFont, Image => JImage}
 import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.drawable.Text
 
-sealed trait CustomDrawable {
+trait CustomDrawable {
   val rect: Rect
-  val value: Int
+}
+
+sealed trait TextDrawable extends CustomDrawable {
+  val rect: Rect
   val content: String
   val imgFont = new JFont("Sans-seriff", 1, 28)
 
@@ -18,7 +21,7 @@ sealed trait CustomDrawable {
 
 }
 
-case class ImgDrawable(rect: Rect, imgFile: java.io.File) {
+case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
   import com.sksamuel.scrimage.ScaleMethod.FastScale
   import com.sksamuel.scrimage.canvas.Canvas
@@ -66,15 +69,36 @@ object ImgDrawable {
   }
 }
 
-sealed trait LongItem extends CustomDrawable {
+object CustomDrawable {
+  def spaceRow( imgItems: List[CustomDrawable] ): List[Rect] = {
+    val (head :: tail) = imgItems
+    val x = head.rect.x
+    val y = head.rect.y
+    val (finalRect, spacedList: List[Rect]) = tail.fold((head.rect, List(head.rect): List[Rect])) { case ((lastRect: Rect, accItems: List[_]), nextItem: CustomDrawable) =>
+      val newRect = nextItem.rect.copy(x = lastRect.x + lastRect.width + 10)
+      // val itemWithUpdatedPos = nextItem.copy(rect=newRect)
+      // nextItem.
+      (newRect, accItems :+ newRect)
+
+      case other => 
+        println("Unrecognized line:")
+        println(other)
+        other
+    }
+    spacedList
+
+  }
+}
+
+sealed trait LongItem extends TextDrawable {
   override val imgFont = new JFont("Sans-seriff", 1, 14)
 }
 
-case class NumericalListItem(rect: Rect, value: Int = 1) extends CustomDrawable {
+case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {
   val content = value.toString
 }
 
-case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawable {
+case class ListItem(rect: Rect, label: Char, value: Int = 1) extends TextDrawable {
   val content = label.toString
   override val text =
        Text(label.toString, rect.x+15, rect.y+30, { g2 =>
@@ -84,7 +108,7 @@ case class ListItem(rect: Rect, label: Char, value: Int = 1) extends CustomDrawa
        })
 }
 
-case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends CustomDrawable {
+case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends TextDrawable {
   override val imgFont = new JFont("Sans-seriff", 1, 14)
   val content = phoneNumber
 }

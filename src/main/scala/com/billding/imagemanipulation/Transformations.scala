@@ -90,10 +90,10 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
            )
      }
 
-    val stagedDrawables: List[List[CustomDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
+    val stagedDrawables: List[List[TextDrawable]] = foldingSummation.map { tup => tup._1 +: tup._2 }
     stagedDrawables.map { currentDrawables =>
       currentDrawables.foldLeft(img){
-        case (curImg: Image, li: CustomDrawable) => curImg.draw(li.rect).draw(li.text)
+        case (curImg: Image, li: TextDrawable) => curImg.draw(li.rect).draw(li.text)
       }
     }
 
@@ -124,12 +124,19 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val img6 = (wd / "tomato.jpg").toIO
     
 
-    val seeds = Range(1, 11).toList.map { curIdx =>
-      ImgDrawable(
-        smallRectangleAt(x=200+75*curIdx, y=50) ,
-        img1
-      )
-    }
+    val seedsUnspaced = 
+        List.fill(11) {
+          ImgDrawable(
+            smallRectangleAt(x=200, y=50),
+            img1
+          )
+        }
+
+    val spacedSeedRectangles = 
+      CustomDrawable.spaceRow(seedsUnspaced)
+
+    val seeds = seedsUnspaced.zip(spacedSeedRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
+
 
     val dirtPiles = seeds
       .flatMap{ _.nextStageOpt(img2) }
@@ -183,12 +190,16 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       "970-222-3333",
       "800-222-3333"
     )
-    val typedPhoneNumbers = phoneNumbers.zipWithIndex.map { case (number, idx) =>
+
+    val typedPhoneNumbersUnspaced = phoneNumbers.map { number =>
       PhoneNumberListItem(
         number,
-        wideRectangleAt(x=200+200*idx, y=50)
+        wideRectangleAt(x=200, y=50)
       )
     }
+    val typedPhoneNumbersRectangles = CustomDrawable.spaceRow(typedPhoneNumbersUnspaced)
+
+    val typedPhoneNumbers = typedPhoneNumbersUnspaced.zip(typedPhoneNumbersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 

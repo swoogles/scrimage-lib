@@ -8,9 +8,9 @@ class ScrimageFunTests extends FlatSpec {
   //   Transformations.foldSummationImage()
   // }
 
-  // "scrimage" should "create phone number fold demo image" in {
-  //   Transformations.phoneNumbersMultiStage()
-  // }
+  "scrimage" should "create phone number fold demo image" in {
+    Transformations.phoneNumbersMultiStage()
+  }
 
   // "scrimage" should "create user->devices fold image" in {
   //   Transformations.devicesForUsers()
@@ -31,19 +31,10 @@ class ScrimageFunTests extends FlatSpec {
   //   val compositeImage  = ScrimageFun.putImgInBox(img1)
   // }
 
-  "scrimage" should "draw a list of img items" in {
-    val img1 = (wd / "single_seed.png").toIO
-    val compositeImage  = Transformations.mapOverImages(img1)
-  }
 
-  "scrimage" should "draw a list of seedling images" in {
-    val img1 = (wd / "dirt_pile.jpg").toIO
-    val compositeImage  = Transformations.mapOverImages(img1)
-  }
-
-  "scrimage" should "draw all tomatos stages on one image" in {
-    val compositeImage  = Transformations.multistageImages()
-  }
+  // "scrimage" should "draw all tomatos stages on one image" in {
+  //   val compositeImage  = Transformations.multistageImages()
+  // }
 
 
 

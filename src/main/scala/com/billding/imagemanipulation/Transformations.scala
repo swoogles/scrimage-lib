@@ -80,8 +80,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
     def demoImage(imgName: String) = (wd / imgName).toIO
 
-    val actions: List[( String, ImgDrawable => Iterable[ImgDrawable])] = List(
-      ("single_seed.png", { imgDrawable => imgDrawable.nextStageOpt(demoImage("single_seed.png")) })
+    val actions: List[ImgDrawable => Iterable[ImgDrawable]] = List(
+      { _.nextStageOpt(demoImage("single_seed.png")) },
+      { _.nextStageOpt(demoImage("dirt_pile.jpg")) },
+      { _.nextStageOpt(demoImage("seedling.jpg")) },
+      { _.nextStageOpt(demoImage("sapling.jpg")) },
+      { _.nextStageOpt(demoImage("grown_plant.jpg")) },
+      { item => CustomDrawable.spaceRow( item.nextStageList(demoImage("tomato.jpg"))) }
     )
     val img1 = demoImage("single_seed.png")
     val img2 = demoImage("dirt_pile.jpg")

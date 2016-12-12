@@ -8,13 +8,13 @@ class ScrimageFunTests extends FlatSpec {
   //   Transformations.foldSummationImage()
   // }
 
-  "scrimage" should "create phone number fold demo image" in {
-    Transformations.phoneNumbersMultiStage()
-  }
-
-  // "scrimage" should "create user->devices fold image" in {
-  //   Transformations.devicesForUsers()
+  // "scrimage" should "create phone number fold demo image" in {
+  //   Transformations.phoneNumbersMultiStage()
   // }
+
+  "scrimage" should "create user->devices fold image" in {
+    Transformations.devicesForUsers()
+  }
 
   // "scrimage" should "overlay 1 image on another" in {
   //   import ammonite.ops._

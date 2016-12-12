@@ -236,12 +236,15 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       "Andrew Proctor" -> List("336-687-3176", "336-654-5141")
       )
 
-    val typedUsers = users.zipWithIndex.map { case (name, idx) =>
+    val typedUsersUnspaced = users.map { name =>
       PhoneNumberListItem(
         name,
-        wideRectangleAt(x=200+200*idx, y=50)
+        wideRectangleAt(x=200, y=50)
       )
     }
+    val typedUsersRectangles = CustomDrawable.spaceRow(typedUsersUnspaced)
+
+    val typedUsers = typedUsersUnspaced.zip(typedUsersRectangles).map{ case (seed, newRect) => seed.copy(rect=newRect) }
 
     val organizedNumbers = List[String]()
 

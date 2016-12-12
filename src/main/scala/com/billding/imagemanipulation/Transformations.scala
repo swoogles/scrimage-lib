@@ -104,7 +104,6 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val typedItems = Range(1, 11).map { curIdx =>
       ImgDrawable(
         smallRectangleAt(x=200+75*curIdx, y=50) ,
-        // curIdx // Ascending values
         imgFile
       )
     }.toList
@@ -122,31 +121,21 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val img3 = (wd / "seedling.jpg").toIO
     val img4 = (wd / "sapling.jpg").toIO
 
-    val seeds = Range(1, 11).map { curIdx =>
+    val seeds = Range(1, 11).toList.map { curIdx =>
       ImgDrawable(
         smallRectangleAt(x=200+75*curIdx, y=50) ,
-        // curIdx // Ascending values
         img1
       )
-    }.toList
-
-    val dirtPiles = seeds.map{ seed =>
-      val rect = seed.rect
-      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
-      seed.copy(rect = nextRect, imgFile = img2)
     }
 
-    val seedlings = dirtPiles.map{ dirtPile =>
-      val rect = dirtPile.rect
-      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
-      dirtPile.copy(rect = nextRect, imgFile = img3)
-    }
+    val dirtPiles = seeds
+      .flatMap{ _.nextStageOpt(img2) }
 
-    val saplings = seedlings.map{ seedling =>
-      val rect = seedling.rect
-      val nextRect = rect.copy(x=rect.x, y=rect.y+75)
-      seedling.copy(rect = nextRect, imgFile = img4)
-    }
+    val seedlings = dirtPiles
+      .flatMap{ _.nextStageOpt(img3) }
+
+    val saplings = seedlings
+      .flatMap{ _.nextStageOpt(img4) }
 
 
     val allStages = seeds ::: dirtPiles ::: seedlings ::: saplings

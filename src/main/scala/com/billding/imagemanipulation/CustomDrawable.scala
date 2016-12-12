@@ -29,6 +29,13 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) {
 
     }
 
+  def nextStageOpt(img: java.io.File) = {
+    val rand = new scala.util.Random
+    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
+      val nextRect = rect.copy(y=rect.y+75)
+      Some(copy(rect = nextRect, imgFile = img))
+    } else None
+  }
 
 }
 

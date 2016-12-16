@@ -6,13 +6,13 @@ class ScrimageFunTests extends FlatSpec {
   import ammonite.ops._
   implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
 
-  // "scrimage" should "show all the steps in a fold summation" in {
-  //   Transformations.foldSummationImage()
-  // }
+  "scrimage" should "show all the steps in a fold summation" in {
+    Transformations.foldSummationImage()
+  }
 
-  // "scrimage" should "create phone number fold demo image" in {
-  //   Transformations.phoneNumbersMultiStage()
-  // }
+  "scrimage" should "create phone number fold demo image" in {
+    Transformations.phoneNumbersMultiStage()
+  }
 
   "scrimage" should "create user->devices fold image" in {
     Transformations.devicesForUsers()
@@ -32,9 +32,9 @@ class ScrimageFunTests extends FlatSpec {
   // }
 
 
-  // "scrimage" should "draw all tomatos stages on one image" in {
-  //   val compositeImage  = Transformations.tomatoGrowing()
-  // }
+  "scrimage" should "draw all tomatos stages on one image" in {
+    val compositeImage  = Transformations.tomatoGrowing()
+  }
 
 
 

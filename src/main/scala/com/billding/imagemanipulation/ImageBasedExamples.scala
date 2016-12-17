@@ -4,19 +4,40 @@ import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.Color
 import com.sksamuel.scrimage.Image
 
-sealed trait Products
-case object Cabinet extends Product
-case object ConstructionMatierals extends Product
-case object Fencing extends Product
-case object Flooring extends Product
-case object Furniture extends Product
-case object Ship extends Product
-case object Shingles extends Product
-case object Desk extends Product
-case object FancyFurniture extends Product
-case object Trim extends Product
+sealed trait Product { 
+  val woodRequired: Int
+}
+case object Cabinet extends Product {
+  val woodRequired = 50
+}
+case object ConstructionMatierals extends Product {
+  val woodRequired = 100
+}
+case object Fencing extends Product {
+  val woodRequired = 100
+}
+case object Flooring extends Product {
+  val woodRequired = 10
+}
+case object Furniture extends Product {
+  val woodRequired = 50
+}
+case object Ship extends Product {
+  val woodRequired = 1000
+}
+case object Shingles extends Product {
+  val woodRequired = 1
+}
+case object FancyFurniture extends Product {
+  val woodRequired = 200
+}
+case object Trim extends Product {
+  val woodRequired = 10
+}
 
-sealed trait WoodType
+sealed trait WoodType {
+  val possibleProducts : List[Product]
+  }
 case object Pine extends WoodType { // Furniture and Construction 
   val possibleProducts = List(Furniture, ConstructionMatierals)
 }
@@ -28,7 +49,7 @@ case object Cedar extends WoodType { // Fences, Ships, Shingles
   val possibleProducts = List(Fencing, Ship, Shingles)
 }
 case object Oak extends WoodType { // Fine Furniture, Desks, Flooring
-  val possibleProducts = List(Desk, Flooring)
+  val possibleProducts = List(Furniture, Flooring)
 }
 case object Birch extends WoodType { // Cabinets and High-End Furniture
   val possibleProducts = List(Cabinet, FancyFurniture)
@@ -37,15 +58,23 @@ case object Birch extends WoodType { // Cabinets and High-End Furniture
 sealed trait WoodenItem {
   val woodType: WoodType
 }
-case class Tree(woodType: WoodType) extends WoodenItem {
+case class Tree(woodType: WoodType, unitsOfWood: Int) extends WoodenItem {
 }
 
-case class Log(woodType: WoodType) extends WoodenItem {
+case class Log(woodType: WoodType) extends WoodenItem
+
+case class WoodenProduct(product: Product, woodType: WoodType) extends WoodenItem with Product {
+  val woodRequired = product.woodRequired
+  assert(woodType.possibleProducts.contains(product))
 }
 
-trait WoodenProduct extends WoodenItem {
+object WoodFunctions {
+  def cutIntoLogs(tree: Tree): List[Log] = {
+    List.fill(tree.unitsOfWood)(Log(tree.woodType))
+  }
 }
-case class Chair(woodType: WoodType) extends WoodenProduct
+
+// case class Chair(woodType: WoodType) extends WoodenProduct
 
 object ImageBasedExamples extends TextDrawing with FileSystemOperations with BoundaryBoxes {
   val tree = List(

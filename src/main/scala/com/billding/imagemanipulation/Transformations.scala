@@ -52,7 +52,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
   def foldSummationImage() = multiStageImages("rectangles") { img =>
 
     val typedItemsUnspaced = 
-      List.fill(11) {
+      List.fill(9) {
         NumericalListItem(
           smallRectangleAt(x=200, y=50),
           1

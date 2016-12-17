@@ -8,17 +8,31 @@ sealed trait Products
 case object Cabinet extends Product
 case object ConstructionMatierals extends Product
 case object Fencing extends Product
+case object Flooring extends Product
+case object Furniture extends Product
 case object Ship extends Product
 case object Shingles extends Product
 case object Desk extends Product
 case object FancyFurniture extends Product
+case object Trim extends Product
 
 sealed trait WoodType
-case object Pine extends WoodType // Furniture and Construction
-case object Poplar extends WoodType // Hardest softwood. Used for cabinets, and can be stained to look like hardwood.
-case object Cedar extends WoodType // Fences, Ships, Shingles
-case object Oak extends WoodType // Fine Furniture, Desks, Flooring
-case object Birch extends WoodType // Cabinets and High-End Furniture
+case object Pine extends WoodType { // Furniture and Construction 
+  val possibleProducts = List(Furniture, ConstructionMatierals)
+}
+case object Poplar extends WoodType { // Hardest softwood. Used for cabinets, and can be stained to look like hardwood.
+  val possibleProducts = List(Cabinet, Trim)
+}
+
+case object Cedar extends WoodType { // Fences, Ships, Shingles
+  val possibleProducts = List(Fencing, Ship, Shingles)
+}
+case object Oak extends WoodType { // Fine Furniture, Desks, Flooring
+  val possibleProducts = List(Desk, Flooring)
+}
+case object Birch extends WoodType { // Cabinets and High-End Furniture
+  val possibleProducts = List(Cabinet, FancyFurniture)
+}
 
 sealed trait WoodenItem {
   val woodType: WoodType

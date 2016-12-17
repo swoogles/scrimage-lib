@@ -97,8 +97,12 @@ object ImageBasedExamples extends TextDrawing with FileSystemOperations with Bou
     val startingPoint: Try[(List[WoodenProduct], List[Log])] = Success((finishedProducts, logs))
     desiredProducts.foldLeft(startingPoint){ case (Success((finishedProducts, remainingLogs)), desiredProduct) =>
       val (usableLogs, unusableLogs) = remainingLogs.partition(log=>log.woodType.possibleProducts.contains(desiredProduct))
-      if ( usableLogs.length > desiredProduct.woodRequired )
-        Success((finishedProducts, remainingLogs))
+      if ( usableLogs.length > desiredProduct.woodRequired ) {
+        // TODO Figure out if combo wood products are worth the trouble
+        // val newlyFinishedproduct = WoodenProduct(desiredProduct, usab
+        // TODO add new product to finished products
+        Success((finishedProducts, usableLogs.drop(desiredProduct.woodRequired) ::: unusableLogs))
+      }
       else
         Failure(new Exception("Not enough wood to make: " + desiredProduct))
     }

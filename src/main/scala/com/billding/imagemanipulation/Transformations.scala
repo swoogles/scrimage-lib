@@ -154,7 +154,6 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     )
 
     val typedPhoneNumbersUnspaced = phoneNumbers.map { number =>
-      println("number: " + number)
       PhoneNumberListItem(
         number,
         wideRectangleAt(x=200, y=50)

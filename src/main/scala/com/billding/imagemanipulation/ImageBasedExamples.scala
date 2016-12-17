@@ -8,31 +8,28 @@ sealed trait Product {
   val woodRequired: Int
 }
 case object Cabinet extends Product {
-  val woodRequired = 50
+  val woodRequired = 2
 }
 case object ConstructionMatierals extends Product {
-  val woodRequired = 100
+  val woodRequired = 3
 }
 case object Fencing extends Product {
-  val woodRequired = 100
+  val woodRequired = 2
 }
 case object Flooring extends Product {
-  val woodRequired = 10
-}
-case object Furniture extends Product {
-  val woodRequired = 50
-}
-case object Ship extends Product {
-  val woodRequired = 1000
-}
-case object Shingles extends Product {
   val woodRequired = 1
 }
+case object Furniture extends Product {
+  val woodRequired = 4
+}
+case object Ship extends Product {
+  val woodRequired = 10
+}
 case object FancyFurniture extends Product {
-  val woodRequired = 200
+  val woodRequired = 8
 }
 case object Trim extends Product {
-  val woodRequired = 10
+  val woodRequired = 1
 }
 
 sealed trait WoodType {
@@ -46,7 +43,7 @@ case object Poplar extends WoodType { // Hardest softwood. Used for cabinets, an
 }
 
 case object Cedar extends WoodType { // Fences, Ships, Shingles
-  val possibleProducts = List(Fencing, Ship, Shingles)
+  val possibleProducts = List(Fencing, Ship)
 }
 case object Oak extends WoodType { // Fine Furniture, Desks, Flooring
   val possibleProducts = List(Furniture, Flooring)
@@ -74,9 +71,38 @@ object WoodFunctions {
   }
 }
 
-// case class Chair(woodType: WoodType) extends WoodenProduct
-
 object ImageBasedExamples extends TextDrawing with FileSystemOperations with BoundaryBoxes {
+  import scala.util.{Try, Success, Failure}
+  val scenario1 = {
+    val forest: List[Tree] = (
+      List.fill(5)(Tree(Pine, 50))
+      ::: List.fill(4)(Tree(Poplar, 60))
+      ::: List.fill(3)(Tree(Cedar, 70))
+      ::: List.fill(2)(Tree(Oak, 80))
+      ::: List.fill(1)(Tree(Birch, 90))
+  )
+
+    val desiredProducts = List(
+      Cabinet,
+      Cabinet,
+      Fencing,
+      Flooring
+    )
+
+    val logs: List[Log] = forest.flatMap { tree =>
+      WoodFunctions.cutIntoLogs(tree)
+    }
+
+    val finishedProducts: List[WoodenProduct] = List()
+    val startingPoint: Try[(List[WoodenProduct], List[Log])] = Success((finishedProducts, logs))
+    desiredProducts.foldLeft(startingPoint){ case (Success((finishedProducts, remainingLogs)), desiredProduct) =>
+      val (usableLogs, unusableLogs) = remainingLogs.partition(log=>log.woodType.possibleProducts.contains(desiredProduct))
+      if ( usableLogs.length > desiredProduct.woodRequired )
+        Success((finishedProducts, remainingLogs))
+      else
+        Failure(new Exception("Not enough wood to make: " + desiredProduct))
+    }
+  }
   val tree = List(
     "Forest", // Forest
     "Trees", // List[Tree]

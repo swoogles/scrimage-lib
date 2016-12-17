@@ -95,10 +95,7 @@ object CustomDrawable {
         }
         case textDrawable: TextDrawable => textDrawable match {
           case nli: NumericalListItem => nli.copy(rect=newRect).asInstanceOf[T]
-          case pli: PhoneNumberListItem => {
-            println("pli.phoneNumber: " + pli.phoneNumber)
-            pli.copy(rect=newRect).asInstanceOf[T]
-          }
+          case pli: PhoneNumberListItem => pli.copy(rect=newRect).asInstanceOf[T]
         }
         case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect).asInstanceOf[T]
       }

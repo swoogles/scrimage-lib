@@ -89,13 +89,16 @@ object CustomDrawable {
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
       val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
       // val newItem = nextItem.copy(rect=newRect)
-      val newItem: T = head match {
+      val newItem: T = nextItem match {
         case pprintable: PprintTextDrawable => pprintable match {
           case textual: TextualDataStructure => textual.copy(x=newRect.x, y=newRect.y).asInstanceOf[T]
         }
         case textDrawable: TextDrawable => textDrawable match {
           case nli: NumericalListItem => nli.copy(rect=newRect).asInstanceOf[T]
-          case pli: PhoneNumberListItem => pli.copy(rect=newRect).asInstanceOf[T]
+          case pli: PhoneNumberListItem => {
+            println("pli.phoneNumber: " + pli.phoneNumber)
+            pli.copy(rect=newRect).asInstanceOf[T]
+          }
         }
         case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect).asInstanceOf[T]
       }

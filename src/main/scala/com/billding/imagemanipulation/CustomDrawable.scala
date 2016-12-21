@@ -84,6 +84,7 @@ object CustomDrawable {
   def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
+      // TODO Uses lenses to simplify all this copying.
       val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
       // val newItem = nextItem.copy(rect=newRect)
       val newItem = nextItem match {

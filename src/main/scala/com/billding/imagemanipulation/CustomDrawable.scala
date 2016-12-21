@@ -81,9 +81,6 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
 }
 
 object CustomDrawable {
-  /*
-   TODO: Figure out how to accomplish this without all the casting
-   */
   def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>

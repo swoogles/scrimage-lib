@@ -10,6 +10,11 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
+/*
+Rather than different Drawable subtypes, maybe a CustomDrawable class could hold 
+onto an instance of something that provided the desired behavior. The nested 
+rectangle copy behavior should not be tied to subclassing in any way.
+*/
 sealed trait TextDrawable extends CustomDrawable {
   val rect: Rect
   val content: String

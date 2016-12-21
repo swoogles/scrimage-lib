@@ -81,7 +81,15 @@ case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable
 }
 
 object CustomDrawable {
+  import monocle.Lens
+  import monocle.macros.GenLens
   def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
+    // val company   : Lens[Employee, Company] = GenLens[Employee](_.company)
+    sealed trait InnerCustomDrawable {
+      def rect: Rect
+      def draw(canvas: Canvas): Canvas
+    }
+    val company = GenLens[ImgDrawable](x=>x.rect)
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
       // TODO Uses lenses to simplify all this copying.

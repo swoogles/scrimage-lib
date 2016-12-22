@@ -43,21 +43,6 @@ object StandaloneDrawing {
 }
 
 
-object Sandbox extends BoundaryBoxes {
-  import ammonite.ops.%
-  import ammonite.ops.cwd
-    implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
-    def demoImage(imgName: String) = (wd / imgName).toIO
-    val img1 = demoImage("single_seed.png")
-    val rect = smallRectangleAt(50, 50)
-    val imgDrawableInstance = CustomDrawableClass(rect, StandaloneDrawing.imgDrawer(rect, img1))
-}
-
-/*
-Rather than different Drawable subtypes, maybe a CustomDrawable class could hold 
-onto an instance of something that provided the desired behavior. The nested 
-rectangle copy behavior should not be tied to subclassing in any way.
-*/
 sealed trait TextDrawable extends CustomDrawable {
   val rect: Rect
   val content: String

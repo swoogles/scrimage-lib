@@ -133,10 +133,6 @@ object CustomDrawable {
   import monocle.macros.GenLens
   def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
     // val company   : Lens[Employee, Company] = GenLens[Employee](_.company)
-    sealed trait InnerCustomDrawable {
-      def rect: Rect
-      def draw(canvas: Canvas): Canvas
-    }
     val company = GenLens[ImgDrawable](x=>x.rect)
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
@@ -161,12 +157,21 @@ object CustomDrawable {
   }
 
   def spaceRowClass( imgItems: List[CustomDrawableClass] ): List[CustomDrawableClass] = {
-    val company = GenLens[ImgDrawable](x=>x.rect)
+    val rectLens = GenLens[CustomDrawableClass](x=>x.rect)
+    val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
     val (finalRect, spacedList: List[CustomDrawableClass]) = tail.fold((head, List(head))) { case ((lastDrawable: CustomDrawableClass, accItems: List[CustomDrawableClass]), nextItem: CustomDrawableClass) =>
       // TODO Uses lenses to simplify all this copying.
-      val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
+      val newXValue = lastDrawable.rect.x + lastDrawable.rect.width + 10
+      val newRect = nextItem.rect.copy(x = newXValue)
       val newItem = nextItem.copy(rect=newRect)
+      val newItemLensed = (rectLens composeLens xLens).modify(oldX=>newXValue)(nextItem)
+      println("newItem")
+      println(newItem)
+      println("newItemLensed")
+      println(newItemLensed)
+      println("\n")
+      assert(newItem == newItemLensed)
       // val newItem = nextItem.copy(rect=newRect)
       (newItem, accItems :+ newItem)
 

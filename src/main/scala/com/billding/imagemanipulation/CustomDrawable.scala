@@ -10,6 +10,29 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
+case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas)
+object StandaloneDrawing {
+  def imgDrawer(rect: Rect, imgFile: java.io.File): Canvas=>Canvas = { canvas =>
+  import com.sksamuel.scrimage.Image
+  import com.sksamuel.scrimage.ScaleMethod.FastScale
+  val image1 = Image.fromFile(imgFile)
+    .scaleTo(rect.width,rect.height, FastScale)
+
+    canvas.draw(rect).overlay(image1, rect.x, rect.y)
+  }
+}
+
+
+object Sandbox extends BoundaryBoxes {
+  import ammonite.ops.%
+  import ammonite.ops.cwd
+    implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
+    def demoImage(imgName: String) = (wd / imgName).toIO
+    val img1 = demoImage("single_seed.png")
+    val rect = smallRectangleAt(50, 50)
+    val imgDrawableInstance = CustomDrawableClass(rect, StandaloneDrawing.imgDrawer(rect, img1))
+}
+
 /*
 Rather than different Drawable subtypes, maybe a CustomDrawable class could hold 
 onto an instance of something that provided the desired behavior. The nested 
@@ -57,6 +80,7 @@ sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
 
 case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable
 
+case class ImgDrawableClass(customDrawable: CustomDrawableClass,  imgFile: java.io.File)
 case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
   import com.sksamuel.scrimage.ScaleMethod.FastScale
@@ -110,6 +134,21 @@ object CustomDrawable {
         }
         case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect)
       }
+      (newItem, accItems :+ newItem)
+
+    }
+    spacedList
+
+  }
+
+  def spaceRowClass( imgItems: List[CustomDrawableClass] ): List[CustomDrawableClass] = {
+    val company = GenLens[ImgDrawable](x=>x.rect)
+    val (head :: tail) = imgItems
+    val (finalRect, spacedList: List[CustomDrawableClass]) = tail.fold((head, List(head))) { case ((lastDrawable: CustomDrawableClass, accItems: List[CustomDrawableClass]), nextItem: CustomDrawableClass) =>
+      // TODO Uses lenses to simplify all this copying.
+      val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
+      val newItem = nextItem.copy(rect=newRect)
+      // val newItem = nextItem.copy(rect=newRect)
       (newItem, accItems :+ newItem)
 
     }

@@ -41,6 +41,20 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     createGif(imgName)
   }
 
+  def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawableClass]]) = {
+    val shapeLists: List[List[CustomDrawableClass]] = imgProducer(blankImg)
+
+    val stagedImages: List[Image] = drawMultipleImagesClass(blankImg, shapeLists)
+
+    stagedImages.zipWithIndex.foreach { case(finalImage, idx) =>
+      val numberedImgName = s"${imgName}_$idx"
+      imageGeneratingFunction(numberedImgName){ (blankImg)=>
+        finalImage 
+      }
+    }
+    createGif(imgName)
+  }
+
   private def drawMultipleImages(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
     stagedDrawables.map { currentDrawables =>
       currentDrawables.foldLeft(img){
@@ -48,6 +62,15 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       }
     }
   }
+
+  private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawableClass]]): List[Image] = {
+    stagedDrawables.map { currentDrawables =>
+      currentDrawables.foldLeft(img){
+        case (curImg: Image, li: CustomDrawableClass) => li.draw(curImg)
+      }
+    }
+  }
+
 
   def foldSummationImage() = multiStageImages("rectangles") { img =>
 
@@ -212,6 +235,29 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
+
+  }
+
+  def againWithoutSubclassing() = multiStageImagesClass("non_subclassed") { img =>
+  import ammonite.ops.cwd
+    implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
+    val rect = smallRectangleAt(50, 50)
+    def demoImage(imgName: String) = (wd / imgName).toIO
+    val img1 = demoImage("single_seed.png")
+    val seedsUnspaced = 
+        List.fill(11) {
+          CustomDrawableClass(rect, StandaloneDrawing.imgDrawer(rect, img1))
+        }
+    val results = 
+      CustomDrawable.spaceRowClass(
+        seedsUnspaced
+      )
+
+    results foreach { x => println(x.rect) }
+
+    List(
+      results.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img1)) }
+  )
 
   }
 }

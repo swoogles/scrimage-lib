@@ -111,6 +111,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       { _.nextStageOpt(demoImage("grown_plant.jpg")) },
       { item => CustomDrawable.spaceRow( item.nextStageList(demoImage("tomato.jpg"))) }
     )
+
     val img1 = demoImage("single_seed.png")
     val img2 = demoImage("dirt_pile.jpg")
     val img3 = demoImage("seedling.jpg")
@@ -244,10 +245,18 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val rect = smallRectangleAt(50, 50)
     def demoImage(imgName: String) = (wd / imgName).toIO
     val img1 = demoImage("single_seed.png")
+    val img2 = demoImage("dirt_pile.jpg")
+    val img3 = demoImage("seedling.jpg")
+    val img4 = demoImage("sapling.jpg")
+    val img5 = demoImage("grown_plant.jpg")
+    val img6 = demoImage("tomato.jpg")
+    
+
     val seedsUnspaced = 
         List.fill(11) {
           CustomDrawableClass(rect, StandaloneDrawing.imgDrawer(rect, img1))
         }
+
     val results = 
       CustomDrawable.spaceRowClass(
         seedsUnspaced
@@ -255,9 +264,41 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
     results foreach { x => println(x.rect) }
 
-    List(
+    val seedsWithUpdatedDrawingFunctions =
       results.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img1)) }
-  )
+
+    val seeds = CustomDrawable.spaceRowClass(seedsWithUpdatedDrawingFunctions)
+
+    val dirtPiles = seeds
+      .flatMap{ _.nextStageOpt(img2) }
+
+    val seedlings = dirtPiles
+      .flatMap{ _.nextStageOpt(img3) }
+
+    val saplings = seedlings
+      .flatMap{ _.nextStageOpt(img4) }
+
+    val plants = saplings
+      .flatMap{ _.nextStageOpt(img5) }
+
+    val tomatoes: List[CustomDrawableClass] = plants
+      .flatMap{ _.nextStageList(img6) }
+
+
+    val tomatoesSpaced: List[CustomDrawableClass] = CustomDrawable.spaceRowClass(tomatoes)
+
+    val stageImages = List(
+      seeds,
+      dirtPiles,
+      seedlings,
+      saplings,
+      plants,
+      tomatoesSpaced
+    )
+
+    stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>
+      acc ::: nextImages
+    }
 
   }
 }

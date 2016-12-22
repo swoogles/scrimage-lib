@@ -10,7 +10,27 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
-case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas)
+case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas) {
+  def onNextRow = {
+    val nextRect = rect.copy(y=rect.y+75)
+    copy(rect = nextRect)
+  }
+
+  def nextStageOpt(img: java.io.File) = {
+    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
+      val nextRowVersion = onNextRow
+      Some(nextRowVersion.copy(draw=StandaloneDrawing.imgDrawer(nextRowVersion.rect, img)))
+    }
+    else 
+      None
+  }
+
+  def nextStageList(img: java.io.File) = {
+    val nextRowVersion = onNextRow
+    List.fill(3)(nextRowVersion.copy(draw=StandaloneDrawing.imgDrawer(nextRowVersion.rect, img)))
+  }
+
+}
 object StandaloneDrawing {
   def imgDrawer(rect: Rect, imgFile: java.io.File): Canvas=>Canvas = { canvas =>
   import com.sksamuel.scrimage.Image
@@ -80,7 +100,6 @@ sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
 
 case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable
 
-case class ImgDrawableClass(customDrawable: CustomDrawableClass,  imgFile: java.io.File)
 case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
   import com.sksamuel.scrimage.Image
   import com.sksamuel.scrimage.ScaleMethod.FastScale

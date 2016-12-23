@@ -100,34 +100,6 @@ sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
 
 case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable
 
-case class ImgDrawable(rect: Rect, imgFile: java.io.File) extends CustomDrawable {
-  import com.sksamuel.scrimage.Image
-  import com.sksamuel.scrimage.ScaleMethod.FastScale
-  val image1 = Image.fromFile(imgFile)
-    .scaleTo(rect.width,rect.height, FastScale)
-
-  override def draw(canvas: Canvas) = {
-    canvas.draw(rect).overlay(image1, rect.x, rect.y)
-  }
-
-  def onNextRow = {
-    val nextRect = rect.copy(y=rect.y+75)
-    copy(rect = nextRect)
-  }
-
-  def nextStageOpt(img: java.io.File) = {
-    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 )
-      Some(onNextRow.copy(imgFile = img))
-    else 
-      None
-  }
-
-  def nextStageList(img: java.io.File) = {
-    List.fill(3)(onNextRow.copy(imgFile = img))
-  }
-
-}
-
 object CustomDrawable {
   import monocle.Lens
   import monocle.macros.GenLens
@@ -143,7 +115,6 @@ object CustomDrawable {
           case nli: NumericalListItem => nli.copy(rect=newRect)
           case pli: PhoneNumberListItem => pli.copy(rect=newRect)
         }
-        case imgDrawable: ImgDrawable => imgDrawable.copy(rect=newRect)
       }
       (newItem, accItems :+ newItem)
 

@@ -32,11 +32,7 @@ class ScrimageFunTests extends FlatSpec {
   // }
 
 
-  "scrimage" should "draw all tomatos stages on one image" in {
-    val compositeImage  = Transformations.tomatoGrowing()
-  }
-
-  "scrimage" should "draw without subclasses" in {
+  "scrimage" should "draw tomatoes without subclasses" in {
     val compositeImage  = Transformations.againWithoutSubclassingRectUpdated()
   }
 

@@ -262,8 +262,6 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
         seedsUnspaced
       )
 
-    results foreach { x => println(x.rect) }
-
     val seedsWithUpdatedDrawingFunctions =
       results.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img1)) }
 
@@ -286,6 +284,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
 
     val tomatoesSpaced: List[CustomDrawableClass] = CustomDrawable.spaceRowClass(tomatoes)
+    val tomatoesWithUpdateddraw =
+      tomatoesSpaced.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img6)) }
 
     val stageImages = List(
       seeds,
@@ -293,7 +293,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       seedlings,
       saplings,
       plants,
-      tomatoesSpaced
+      tomatoesWithUpdateddraw
     )
 
     stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>

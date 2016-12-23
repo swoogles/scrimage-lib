@@ -10,7 +10,11 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
-case class CustomDrawableRectUpdated(rect: Rect, draw: Rect => Canvas => Canvas)
+case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => Canvas => Canvas) {
+  def draw: Canvas => Canvas = {
+    drawWithRect(rect)
+  }
+}
 
 case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas) {
   def onNextRow = {

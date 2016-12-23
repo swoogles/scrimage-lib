@@ -37,7 +37,7 @@ class ScrimageFunTests extends FlatSpec {
   }
 
   "scrimage" should "draw without subclasses" in {
-    val compositeImage  = Transformations.againWithoutSubclassing()
+    val compositeImage  = Transformations.againWithoutSubclassingRectUpdated()
   }
 
 

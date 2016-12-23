@@ -41,8 +41,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     createGif(imgName)
   }
 
-  def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawableClass]]) = {
-    val shapeLists: List[List[CustomDrawableClass]] = imgProducer(blankImg)
+  def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawableRectUpdated]]) = {
+    val shapeLists: List[List[CustomDrawableRectUpdated]] = imgProducer(blankImg)
 
     val stagedImages: List[Image] = drawMultipleImagesClass(blankImg, shapeLists)
 
@@ -63,10 +63,10 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
   }
 
-  private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawableClass]]): List[Image] = {
+  private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawableRectUpdated]]): List[Image] = {
     stagedDrawables.map { currentDrawables =>
       currentDrawables.foldLeft(img){
-        case (curImg: Image, li: CustomDrawableClass) => li.draw(curImg)
+        case (curImg: Image, li: CustomDrawableRectUpdated) => li.draw(curImg)
       }
     }
   }
@@ -239,7 +239,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   }
 
-  def againWithoutSubclassing() = multiStageImagesClass("non_subclassed") { img =>
+  def againWithoutSubclassingRectUpdated() = multiStageImagesClass("rect_updated") { img =>
   import ammonite.ops.cwd
     implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
     val rect = smallRectangleAt(50, 50)
@@ -254,18 +254,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
     val seedsUnspaced = 
         List.fill(11) {
-          CustomDrawableClass(rect, StandaloneDrawing.imgDrawer(rect, img1))
+          CustomDrawableRectUpdated(rect, StandaloneDrawing.imgDrawerSepRect(img1))
         }
 
-    val results = 
-      CustomDrawable.spaceRowClass(
+    val seeds = 
+      CustomDrawable.spaceRowClassRectUpdated(
         seedsUnspaced
       )
-
-    val seedsWithUpdatedDrawingFunctions =
-      results.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img1)) }
-
-    val seeds = CustomDrawable.spaceRowClass(seedsWithUpdatedDrawingFunctions)
 
     val dirtPiles = seeds
       .flatMap{ _.nextStageOpt(img2) }
@@ -279,13 +274,11 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val plants = saplings
       .flatMap{ _.nextStageOpt(img5) }
 
-    val tomatoes: List[CustomDrawableClass] = plants
+    val tomatoes: List[CustomDrawableRectUpdated] = plants
       .flatMap{ _.nextStageList(img6) }
 
 
-    val tomatoesSpaced: List[CustomDrawableClass] = CustomDrawable.spaceRowClass(tomatoes)
-    val tomatoesWithUpdateddraw =
-      tomatoesSpaced.map{ drawable => drawable.copy(draw=StandaloneDrawing.imgDrawer(drawable.rect, img6)) }
+    val tomatoesSpaced: List[CustomDrawableRectUpdated] = CustomDrawable.spaceRowClassRectUpdated(tomatoes)
 
     val stageImages = List(
       seeds,
@@ -293,7 +286,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       seedlings,
       saplings,
       plants,
-      tomatoesWithUpdateddraw
+      tomatoesSpaced
     )
 
     stageImages.tail.scanLeft(stageImages.head){ case (acc, nextImages) =>

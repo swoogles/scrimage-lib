@@ -14,6 +14,25 @@ case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => Canvas =>
   def draw: Canvas => Canvas = {
     drawWithRect(rect)
   }
+
+  def onNextRow = {
+    val nextRect = rect.copy(y=rect.y+75)
+    copy(rect = nextRect)
+  }
+
+  def nextStageOpt(img: java.io.File) = {
+    if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
+      val nextRowVersion = onNextRow
+      Some(nextRowVersion.copy(drawWithRect=StandaloneDrawing.imgDrawerSepRect(img)))
+    }
+    else 
+      None
+  }
+
+  def nextStageList(img: java.io.File) = {
+    val nextRowVersion = onNextRow
+    List.fill(3)(nextRowVersion.copy(drawWithRect=StandaloneDrawing.imgDrawerSepRect(img)))
+  }
 }
 
 case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas) {
@@ -39,12 +58,23 @@ case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas) {
 }
 object StandaloneDrawing {
   def imgDrawer(rect: Rect, imgFile: java.io.File): Canvas=>Canvas = { canvas =>
-  import com.sksamuel.scrimage.Image
-  import com.sksamuel.scrimage.ScaleMethod.FastScale
-  val image1 = Image.fromFile(imgFile)
-    .scaleTo(rect.width,rect.height, FastScale)
+    import com.sksamuel.scrimage.Image
+    import com.sksamuel.scrimage.ScaleMethod.FastScale
+    val image1 = Image.fromFile(imgFile)
+      .scaleTo(rect.width,rect.height, FastScale)
 
-    canvas.draw(rect).overlay(image1, rect.x, rect.y)
+      canvas.draw(rect).overlay(image1, rect.x, rect.y)
+  }
+
+  def imgDrawerSepRect(imgFile: java.io.File): Rect=>Canvas=>Canvas = {rect => 
+  { canvas =>
+    import com.sksamuel.scrimage.Image
+    import com.sksamuel.scrimage.ScaleMethod.FastScale
+    val image1 = Image.fromFile(imgFile)
+      .scaleTo(rect.width,rect.height, FastScale)
+
+      canvas.draw(rect).overlay(image1, rect.x, rect.y)
+  }
   }
 }
 
@@ -145,6 +175,19 @@ object CustomDrawable {
 
   def spaceRowClass( imgItems: List[CustomDrawableClass] ): List[CustomDrawableClass] = {
     val rectLens = GenLens[CustomDrawableClass](x=>x.rect)
+    val xLens = GenLens[Rect](rect=>rect.x)
+    val (head :: tail) = imgItems
+    tail.foldLeft(List(head)) { (accItems, nextItem) =>
+      val lastDrawable = accItems.last
+      val newXValue = lastDrawable.rect.x + lastDrawable.rect.width + 10
+      val spacedItem = (rectLens composeLens xLens).modify(oldX=>newXValue)(nextItem)
+      accItems :+ spacedItem
+
+    }
+  }
+
+  def spaceRowClassRectUpdated( imgItems: List[CustomDrawableRectUpdated] ): List[CustomDrawableRectUpdated] = {
+    val rectLens = GenLens[CustomDrawableRectUpdated](x=>x.rect)
     val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
     tail.foldLeft(List(head)) { (accItems, nextItem) =>

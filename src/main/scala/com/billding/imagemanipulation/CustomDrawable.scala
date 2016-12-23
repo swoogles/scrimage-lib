@@ -10,6 +10,8 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
+case class CustomDrawableRectUpdated(rect: Rect, draw: Rect => Canvas => Canvas)
+
 case class CustomDrawableClass(rect: Rect, draw: Canvas => Canvas) {
   def onNextRow = {
     val nextRect = rect.copy(y=rect.y+75)
@@ -141,7 +143,7 @@ object CustomDrawable {
     val rectLens = GenLens[CustomDrawableClass](x=>x.rect)
     val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
-    tail.foldLeft(List(head)) { case (accItems: List[CustomDrawableClass], nextItem: CustomDrawableClass) =>
+    tail.foldLeft(List(head)) { (accItems, nextItem) =>
       val lastDrawable = accItems.last
       val newXValue = lastDrawable.rect.x + lastDrawable.rect.width + 10
       val spacedItem = (rectLens composeLens xLens).modify(oldX=>newXValue)(nextItem)

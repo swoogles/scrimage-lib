@@ -123,19 +123,22 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
     val locationFoldingWithRemainingClassed: List[(Map[String,List[String]], List[CustomDrawableRectUpdated])] =
       typedPhoneNumbersNew.scanLeft((organizedNumbers, typedPhoneNumbersNew)){ case ((sortedNumbers, remainingNumbers), li) =>
-        val region = areaCodesAndStates.get(li.content.toString.take(3)).getOrElse("UNKNOWN")
+        val region = areaCodesAndStates.get(li.content.take(3)).getOrElse("UNKNOWN")
         val neighboringEntries = sortedNumbers(region)
-        (sortedNumbers + (region -> (li.content.toString :: neighboringEntries)), remainingNumbers.tail)
+        val result = (sortedNumbers + (region -> (li.content :: neighboringEntries)), remainingNumbers.tail)
+        import pprint.Config
+        implicit val pprintConfig = Config()
+        pprint.pprintln(result)
+        result
       }
 
 
     locationFoldingWithRemainingClassed.map { case(currentLocations, remainingNumbers) =>
       import com.sksamuel.scrimage.canvas.drawable.Rect
       val rect: Rect = Rect(x=IMG_WIDTH/7, y=IMG_HEIGHT/2, width=50, height=50, rectangleConfig )
-      val textualDataStructure = CustomDrawableRectUpdated(rect, StandaloneDrawing.pprintDrawing)
-      // val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/2, currentLocations)
+      val pprintedContent  = pprint.stringify(currentLocations, width=40) // TODO Handle with clean function. Don't pprint here.
+      val textualDataStructure = CustomDrawableRectUpdated(rect, StandaloneDrawing.pprintDrawing, pprintedContent)
       textualDataStructure :: remainingNumbers
-      // null
     }
 
   }

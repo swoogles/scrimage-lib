@@ -36,18 +36,9 @@ case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => String =>
 }
 
 object StandaloneDrawing extends TextDrawing {
-  def imgDrawer(rect: Rect, imgFile: java.io.File): Canvas=>Canvas = { canvas =>
-    import com.sksamuel.scrimage.Image
-    import com.sksamuel.scrimage.ScaleMethod.FastScale
-    val image1 = Image.fromFile(imgFile)
-      .scaleTo(rect.width,rect.height, FastScale)
-
-      canvas.draw(rect).overlay(image1, rect.x, rect.y)
-  }
 
   def imgDrawerSepRect(imgFile: java.io.File): Rect=>String=>Canvas=>Canvas = {rect => 
-  { content =>
-    { canvas =>
+  { content => canvas =>
       import com.sksamuel.scrimage.Image
       import com.sksamuel.scrimage.ScaleMethod.FastScale
       val image1 = Image.fromFile(imgFile)
@@ -56,26 +47,23 @@ object StandaloneDrawing extends TextDrawing {
         canvas.draw(rect).overlay(image1, rect.x, rect.y)
     }
   }
-  }
 
-  val pprintDrawing: Rect=>String=>Canvas=>Canvas = { rect =>
-  { content =>
-    { canvas =>
-      import pprint.Config
-      implicit val pprintConfig = Config()
+  val pprintDrawing: Rect=>String=>Canvas=>Canvas = 
+  { rect => content => canvas =>
+    import pprint.Config
+    implicit val pprintConfig = Config()
 
-      val imgFont = new JFont("Sans-seriff", 1, 14)
+    val imgFont = new JFont("Sans-seriff", 1, 14)
 
-      def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
-      val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
-      drawableTextLines.map { text=>text.x }
+    def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
+    val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
+    drawableTextLines.map { text=>text.x }
 
-        drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
-          curCanvas.draw(nextText) 
-        }
-    }
+    drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
+      curCanvas.draw(nextText) 
     }
   }
+
 }
 
 
@@ -149,11 +137,10 @@ object CustomDrawable {
     val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
     tail.foldLeft(List(head)) { (accItems, nextItem) =>
-      val lastDrawable = accItems.last
-      val newXValue = lastDrawable.rect.x + lastDrawable.rect.width + 10
+      val lastRect = accItems.last.rect
+      val newXValue = lastRect.x + lastRect.width + 10
       val spacedItem = (rectLens composeLens xLens).modify(oldX=>newXValue)(nextItem)
       accItems :+ spacedItem
-
     }
   }
 

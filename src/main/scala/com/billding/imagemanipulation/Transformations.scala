@@ -99,7 +99,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     foldingSummation.map { tup => tup._1 +: tup._2 }
   }
 
-  def phoneNumbersMultiStage() = multiStageImages("phone_folding") { img =>
+  def phoneNumbersMultiStageNonSubclass() = multiStageImagesClass("phone_folding_non_subclassed") { img =>
     val areaCodesAndStates = Map(
       "801"->"UT",
       "970"->"CO"
@@ -112,26 +112,30 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       "800-222-3333"
     )
 
-    val typedPhoneNumbersUnspaced = phoneNumbers.map { number =>
-      PhoneNumberListItem(
-        number,
-        wideRectangleAt(x=200, y=50)
-      )
+    val typedPhoneNumbersNew = 
+      CustomDrawable.spaceRowClassRectUpdated (
+      phoneNumbers.map { number =>
+      CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, number)
     }
-    val typedPhoneNumbers = CustomDrawable.spaceRow(typedPhoneNumbersUnspaced)
+    )
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
-    val locationFoldingWithRemaining: List[(Map[String,List[String]], List[PhoneNumberListItem])] =
-      typedPhoneNumbers.scanLeft((organizedNumbers, typedPhoneNumbers)){ case ((sortedNumbers, remainingNumbers), li) =>
-        val region = areaCodesAndStates.get(li.phoneNumber.take(3)).getOrElse("UNKNOWN")
+    val locationFoldingWithRemainingClassed: List[(Map[String,List[String]], List[CustomDrawableRectUpdated])] =
+      typedPhoneNumbersNew.scanLeft((organizedNumbers, typedPhoneNumbersNew)){ case ((sortedNumbers, remainingNumbers), li) =>
+        val region = areaCodesAndStates.get(li.content.toString.take(3)).getOrElse("UNKNOWN")
         val neighboringEntries = sortedNumbers(region)
-        (sortedNumbers + (region -> (li.phoneNumber :: neighboringEntries)), remainingNumbers.tail)
+        (sortedNumbers + (region -> (li.content.toString :: neighboringEntries)), remainingNumbers.tail)
       }
 
-    locationFoldingWithRemaining.map { case(currentLocations, remainingNumbers) =>
-      val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/2, currentLocations)
+
+    locationFoldingWithRemainingClassed.map { case(currentLocations, remainingNumbers) =>
+      import com.sksamuel.scrimage.canvas.drawable.Rect
+      val rect: Rect = Rect(x=IMG_WIDTH/7, y=IMG_HEIGHT/2, width=50, height=50, rectangleConfig )
+      val textualDataStructure = CustomDrawableRectUpdated(rect, StandaloneDrawing.pprintDrawing)
+      // val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/2, currentLocations)
       textualDataStructure :: remainingNumbers
+      // null
     }
 
   }

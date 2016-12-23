@@ -11,7 +11,7 @@ class ScrimageFunTests extends FlatSpec {
   }
 
   "scrimage" should "create phone number fold demo image" in {
-    Transformations.phoneNumbersMultiStage()
+    Transformations.phoneNumbersMultiStageNonSubclass()
   }
 
   "scrimage" should "create user->devices fold image" in {

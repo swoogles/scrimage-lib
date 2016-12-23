@@ -26,7 +26,7 @@ import pprint.Config
 trait TextDrawing extends FileSystemOperations {
   implicit val pprintConfig = Config()
 
-  val imgFont = new JFont("Sans-seriff", 1, 28)
+  val imgFont = new JFont("Sans-seriff", 1, 14)
   def makeTextDrawable(content: List[String]): List[Text] = {
     makeTextDrawable(content, 20, 30)
   }

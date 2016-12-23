@@ -10,9 +10,9 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
-case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => Canvas => Canvas) {
+case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: String = "DEFAULT") {
   def draw: Canvas => Canvas = {
-    drawWithRect(rect)
+    drawWithRect(rect)(content)
   }
 
   def onNextRow = {
@@ -35,7 +35,7 @@ case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => Canvas =>
   }
 }
 
-object StandaloneDrawing {
+object StandaloneDrawing extends TextDrawing {
   def imgDrawer(rect: Rect, imgFile: java.io.File): Canvas=>Canvas = { canvas =>
     import com.sksamuel.scrimage.Image
     import com.sksamuel.scrimage.ScaleMethod.FastScale
@@ -45,15 +45,36 @@ object StandaloneDrawing {
       canvas.draw(rect).overlay(image1, rect.x, rect.y)
   }
 
-  def imgDrawerSepRect(imgFile: java.io.File): Rect=>Canvas=>Canvas = {rect => 
-  { canvas =>
-    import com.sksamuel.scrimage.Image
-    import com.sksamuel.scrimage.ScaleMethod.FastScale
-    val image1 = Image.fromFile(imgFile)
-      .scaleTo(rect.width,rect.height, FastScale)
+  def imgDrawerSepRect(imgFile: java.io.File): Rect=>String=>Canvas=>Canvas = {rect => 
+  { content =>
+    { canvas =>
+      import com.sksamuel.scrimage.Image
+      import com.sksamuel.scrimage.ScaleMethod.FastScale
+      val image1 = Image.fromFile(imgFile)
+        .scaleTo(rect.width,rect.height, FastScale)
 
-      canvas.draw(rect).overlay(image1, rect.x, rect.y)
+        canvas.draw(rect).overlay(image1, rect.x, rect.y)
+    }
   }
+  }
+
+  val pprintDrawing: Rect=>String=>Canvas=>Canvas = { rect =>
+  { content =>
+    { canvas =>
+      import pprint.Config
+      implicit val pprintConfig = Config()
+
+      val imgFont = new JFont("Sans-seriff", 1, 14)
+
+      def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
+      val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
+      drawableTextLines.map { text=>text.x }
+
+        drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
+          curCanvas.draw(nextText) 
+        }
+    }
+    }
   }
 }
 

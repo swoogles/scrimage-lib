@@ -1,5 +1,8 @@
 package imagemanipulation
 
+import java.io.File
+import java.net.URL
+
 import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.Color
 import com.sksamuel.scrimage.Image
@@ -168,7 +171,19 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
     implicit val wd = tranformationImagesFolder
 
     val rect = smallRectangleAt(50, 50)
-    def demoImage(imgName: String) = (wd / imgName).toIO
+    def demoImage(imgName: String) = {
+    // val source = Source.fromURL(getClass.getResource("/data.xml"))
+    import scala.io.Source
+      // (wd / imgName).toIO
+      val file: URL = getClass.getResource("/TransformationImages/" + imgName)
+
+      new File(file.toURI)
+//      Source.fromURL()
+    }
+
+    // The string argument given to getResource is a path relative to
+    // the resources directory.
+
     val img1 = demoImage("single_seed.png")
     val img2 = demoImage("dirt_pile.jpg")
     val img3 = demoImage("seedling.jpg")

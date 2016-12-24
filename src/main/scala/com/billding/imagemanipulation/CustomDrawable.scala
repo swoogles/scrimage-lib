@@ -5,24 +5,11 @@ import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.drawable.Text
 import com.sksamuel.scrimage.canvas.Canvas
 
-sealed trait CustomDrawable {
-  val rect: Rect
-  def draw(canvas: Canvas): Canvas
-}
-
-object CustomDrawableRectUpdated {
-  def apply(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: Iterable[_]): CustomDrawableRectUpdated = {
-    import pprint.Config
-    implicit val pprintConfig = Config()
-    CustomDrawableRectUpdated(rect, drawWithRect, pprint.stringify(content, width=40))
-  }
-}
-
 /*
 Passing in a String for content will leave it unchanged, but passing an Iterable[_] will
 result in the content being pprint formatted before drawing.
 */
-case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: String = "DEFAULT") {
+case class CustomDrawable(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: String = "DEFAULT", value: Int = 1) {
   def draw: Canvas => Canvas = {
     drawWithRect(rect)(content)
   }
@@ -78,45 +65,12 @@ object StandaloneDrawing extends TextDrawing {
 
 }
 
-
-sealed trait TextDrawable extends CustomDrawable {
-  val rect: Rect
-  val content: String
-  val imgFont = new JFont("Sans-seriff", 1, 28)
-
-  def text: Text =
-       Text(content.toString, rect.x+15, rect.y+30, { g2 =>
-         g2.setBackground(JColor.BLUE)
-         g2.setFont(imgFont)
-       })
-
-  override def draw(canvas: Canvas): Canvas = {
-    canvas.draw(rect).draw(text)
-  }
-
-}
-
 object CustomDrawable {
   import monocle.Lens
   import monocle.macros.GenLens
-  def spaceRow[T <: CustomDrawable]( imgItems: List[T] ): List[T] = {
-    val (head :: tail) = imgItems
-    val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
-      val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
-      val newItem = nextItem match {
-        case textDrawable: TextDrawable => textDrawable match {
-          case nli: NumericalListItem => nli.copy(rect=newRect)
-        }
-      }
-      (newItem, accItems :+ newItem)
 
-    }
-    spacedList
-
-  }
-
-  def spaceRowClassRectUpdated( imgItems: List[CustomDrawableRectUpdated] ): List[CustomDrawableRectUpdated] = {
-    val rectLens = GenLens[CustomDrawableRectUpdated](x=>x.rect)
+  def spaceRowClassRectUpdated( imgItems: List[CustomDrawable] ): List[CustomDrawable] = {
+    val rectLens = GenLens[CustomDrawable](x=>x.rect)
     val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
     tail.foldLeft(List(head)) { (accItems, nextItem) =>
@@ -127,14 +81,15 @@ object CustomDrawable {
     }
   }
 
-}
-
-case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {
-  val content = value.toString
-
-  def onNextRow = {
-    val nextRect = rect.copy(y=rect.y+75)
-    copy(rect = nextRect)
+  def apply(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: Iterable[_]): CustomDrawable = {
+    import pprint.Config
+    implicit val pprintConfig = Config()
+    CustomDrawable(rect, drawWithRect, pprint.stringify(content, width=40))
   }
 
+  def apply(value: Int, rect: Rect): CustomDrawable = {
+    import pprint.Config
+    implicit val pprintConfig = Config()
+    CustomDrawable(rect, StandaloneDrawing.pprintDrawing, value.toString, value)
+  }
 }

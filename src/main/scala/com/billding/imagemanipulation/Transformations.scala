@@ -27,22 +27,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
   }
 
-  def multiStageImages( imgName: String)( imgProducer: Image => List[List[CustomDrawable]]) = {
+  def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawable]]) = {
     val shapeLists: List[List[CustomDrawable]] = imgProducer(blankImg)
-
-    val stagedImages: List[Image] = drawMultipleImages(blankImg, shapeLists)
-
-    stagedImages.zipWithIndex.foreach { case(finalImage, idx) =>
-      val numberedImgName = s"${imgName}_$idx"
-      imageGeneratingFunction(numberedImgName){ (blankImg)=>
-        finalImage 
-      }
-    }
-    createGif(imgName)
-  }
-
-  def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawableRectUpdated]]) = {
-    val shapeLists: List[List[CustomDrawableRectUpdated]] = imgProducer(blankImg)
 
     val stagedImages: List[Image] = drawMultipleImagesClass(blankImg, shapeLists)
 
@@ -55,7 +41,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     createGif(imgName)
   }
 
-  private def drawMultipleImages(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
+  private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
     stagedDrawables.map { currentDrawables =>
       currentDrawables.foldLeft(img){
         case (curImg: Image, li: CustomDrawable) => li.draw(curImg)
@@ -63,37 +49,32 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
   }
 
-  private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawableRectUpdated]]): List[Image] = {
-    stagedDrawables.map { currentDrawables =>
-      currentDrawables.foldLeft(img){
-        case (curImg: Image, li: CustomDrawableRectUpdated) => li.draw(curImg)
-      }
-    }
-  }
 
+  def foldSummationImage() = multiStageImagesClass("rectangles") { img =>
 
-  def foldSummationImage() = multiStageImages("rectangles") { img =>
-
-    val typedItemsUnspaced = 
+    val typedItems = 
+    CustomDrawable.spaceRowClassRectUpdated(
       List.fill(9) {
-        NumericalListItem(
-          smallRectangleAt(x=200, y=50),
-          1
+        CustomDrawable(
+          1,
+          smallRectangleAt(x=200, y=50)
         )
       }
+    )
 
-    val typedItems = CustomDrawable.spaceRow(typedItemsUnspaced)
-
-     val accumulator = NumericalListItem(smallRectangleAt(x=50, y=50), 0)
+     val accumulator = CustomDrawable(0, smallRectangleAt(x=50, y=50))
 
      val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
-       case ((acc: NumericalListItem, remainingItems: List[NumericalListItem]), nextItem: NumericalListItem) => 
+       case ((acc: CustomDrawable, remainingItems: List[CustomDrawable]), nextItem: CustomDrawable) => {
+
+         val newValue = acc.value+nextItem.value
          (
            acc
              .onNextRow
-             .copy( value=acc.value+nextItem.value), 
+             .copy( value=newValue, content=newValue.toString), 
            remainingItems.tail.map(_.onNextRow)
          )
+       }
      }
 
     foldingSummation.map { tup => tup._1 +: tup._2 }
@@ -115,13 +96,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val typedPhoneNumbersNew = 
       CustomDrawable.spaceRowClassRectUpdated (
       phoneNumbers.map { number =>
-      CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, number)
+      CustomDrawable(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, number)
     }
     )
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
-    val locationFoldingWithRemainingClassed: List[(Map[String,List[String]], List[CustomDrawableRectUpdated])] =
+    val locationFoldingWithRemainingClassed: List[(Map[String,List[String]], List[CustomDrawable])] =
       typedPhoneNumbersNew.scanLeft((organizedNumbers, typedPhoneNumbersNew)){ case ((sortedNumbers, remainingNumbers), li) =>
         val region = areaCodesAndStates.get(li.content.take(3)).getOrElse("UNKNOWN")
         val neighboringEntries = sortedNumbers(region)
@@ -133,7 +114,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       import com.sksamuel.scrimage.canvas.drawable.Rect
       val rect: Rect = Rect(x=IMG_WIDTH/7, y=IMG_HEIGHT/2, width=50, height=50, rectangleConfig )
       val pprintedContent  = pprint.stringify(currentLocations, width=40) // TODO Handle with clean function. Don't pprint here.
-      val textualDataStructure = CustomDrawableRectUpdated(rect, StandaloneDrawing.pprintDrawing, pprintedContent)
+      val textualDataStructure = CustomDrawable(rect, StandaloneDrawing.pprintDrawing, pprintedContent)
       textualDataStructure :: remainingNumbers
     }
 
@@ -156,7 +137,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val typedUsers = 
       CustomDrawable.spaceRowClassRectUpdated (
         users.map { name =>
-          CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, name)
+          CustomDrawable(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, name)
         }
       )
 
@@ -168,11 +149,11 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
 
     val devicesDataStore = 
-      CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT * 5 / 8), StandaloneDrawing.pprintDrawing, user_devices)
+      CustomDrawable(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT * 5 / 8), StandaloneDrawing.pprintDrawing, user_devices)
       
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = 
-        CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT / 4), StandaloneDrawing.pprintDrawing, currentLocations)
+        CustomDrawable(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT / 4), StandaloneDrawing.pprintDrawing, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
   }
@@ -192,7 +173,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
     val seedsUnspaced = 
         List.fill(11) {
-          CustomDrawableRectUpdated(rect, StandaloneDrawing.imgDrawerSepRect(img1))
+          CustomDrawable(rect, StandaloneDrawing.imgDrawerSepRect(img1))
         }
 
     val seeds = 
@@ -212,11 +193,11 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     val plants = saplings
       .flatMap{ _.nextStageOpt(img5) }
 
-    val tomatoes: List[CustomDrawableRectUpdated] = plants
+    val tomatoes: List[CustomDrawable] = plants
       .flatMap{ _.nextStageList(img6) }
 
 
-    val tomatoesSpaced: List[CustomDrawableRectUpdated] = CustomDrawable.spaceRowClassRectUpdated(tomatoes)
+    val tomatoesSpaced: List[CustomDrawable] = CustomDrawable.spaceRowClassRectUpdated(tomatoes)
 
     val stageImages = List(
       seeds,

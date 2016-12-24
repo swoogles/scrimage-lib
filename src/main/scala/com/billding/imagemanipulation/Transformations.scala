@@ -67,6 +67,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
      val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
        case ((acc: CustomDrawable, remainingItems: List[CustomDrawable]), nextItem: CustomDrawable) => {
 
+         // TODO Figure out how to avoid copying value & content here.
+         // It should be possible to use a single value.
          val newValue = acc.value+nextItem.value
          (
            acc

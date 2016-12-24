@@ -10,36 +10,16 @@ class ScrimageFunTests extends FlatSpec {
     Transformations.foldSummationImage()
   }
 
-  // "scrimage" should "create phone number fold demo image" in {
-  //   Transformations.phoneNumbersMultiStageNonSubclass()
-  // }
+  "scrimage" should "create phone number fold demo image" in {
+    Transformations.phoneNumbersMultiStageNonSubclass()
+  }
 
-  // "scrimage" should "create user->devices fold image" in {
-  //   Transformations.devicesForUsers()
-  // }
+  "scrimage" should "create user->devices fold image" in {
+    Transformations.devicesForUsers()
+  }
 
-  // "scrimage" should "overlay 1 image on another" in {
-  //   import ammonite.ops._
-  //   implicit val wd: ammonite.ops.Path = cwd / "OriginalImages"
-  //   val img1 = (wd / "rollercoaster_ride.jpg").toIO
-  //   val img2 = (wd / "SARAnight.jpg").toIO
-  //   val compositeImage  = ScrimageFun.compositeImages(img1, img2)
-  // }
-
-  // "scrimage" should "put an image in a box" in {
-  //   val img1 = (wd / "rollercoaster_ride.jpg").toIO
-  //   val compositeImage  = ScrimageFun.putImgInBox(img1)
-  // }
-
-
-  // "scrimage" should "draw tomatoes without subclasses" in {
-  //   val compositeImage  = Transformations.againWithoutSubclassingRectUpdated()
-  // }
-
-
-
-
-
-
+  "scrimage" should "draw tomatoes without subclasses" in {
+    val compositeImage  = Transformations.againWithoutSubclassingRectUpdated()
+  }
 
 }

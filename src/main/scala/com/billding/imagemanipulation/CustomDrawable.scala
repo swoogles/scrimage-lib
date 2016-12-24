@@ -36,15 +36,14 @@ case class CustomDrawable(rect: Rect, drawWithRect: Rect => String => Canvas => 
 
 object StandaloneDrawing extends TextDrawing {
 
-  def imgDrawerSepRect(imgFile: java.io.File): Rect=>String=>Canvas=>Canvas = {rect => 
-  { content => canvas =>
+  def imgDrawerSepRect(imgFile: java.io.File): Rect=>String=>Canvas=>Canvas =
+  { rect => content => canvas =>
       import com.sksamuel.scrimage.Image
       import com.sksamuel.scrimage.ScaleMethod.FastScale
       val image1 = Image.fromFile(imgFile)
         .scaleTo(rect.width,rect.height, FastScale)
 
         canvas.draw(rect).overlay(image1, rect.x, rect.y)
-    }
   }
 
   val pprintDrawing: Rect=>String=>Canvas=>Canvas = 
@@ -88,8 +87,6 @@ object CustomDrawable {
   }
 
   def apply(value: Int, rect: Rect): CustomDrawable = {
-    import pprint.Config
-    implicit val pprintConfig = Config()
     CustomDrawable(rect, StandaloneDrawing.pprintDrawing, value.toString, value)
   }
 }

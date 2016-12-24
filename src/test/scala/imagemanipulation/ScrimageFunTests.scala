@@ -3,23 +3,25 @@ package imagemanipulation
 import org.scalatest.FlatSpec
 
 class ScrimageFunTests extends FlatSpec {
-  import ammonite.ops._
-  implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
+  import ammonite.ops.cwd
+  val wd: ammonite.ops.Path = cwd / "TransformationImages"
+
+  val transformations = new Transformations(cwd)
 
   "scrimage" should "show all the steps in a fold summation" in {
-    Transformations.foldSummationImage()
+    transformations.foldSummationImage()
   }
 
   "scrimage" should "create phone number fold demo image" in {
-    Transformations.phoneNumbersMultiStageNonSubclass()
+    transformations.phoneNumbersMultiStageNonSubclass()
   }
 
   "scrimage" should "create user->devices fold image" in {
-    Transformations.devicesForUsers()
+    transformations.devicesForUsers()
   }
 
   "scrimage" should "draw tomatoes without subclasses" in {
-    val compositeImage  = Transformations.againWithoutSubclassingRectUpdated()
+    val compositeImage  = transformations.againWithoutSubclassingRectUpdated()
   }
 
 }

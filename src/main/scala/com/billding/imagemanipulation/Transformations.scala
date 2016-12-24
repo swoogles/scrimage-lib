@@ -4,9 +4,13 @@ import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.Color
 import com.sksamuel.scrimage.Image
 
-object Transformations extends TextDrawing with FileSystemOperations with BoundaryBoxes {
+class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with FileSystemOperations with BoundaryBoxes {
   import ammonite.ops.%
-  import ammonite.ops.cwd
+  import ammonite.ops.mkdir
+
+  private val generatedImagesFolder = basePath / "GeneratedImages"
+  private val tranformationImagesFolder = basePath / "TransformationImages"
+  mkdir! generatedImagesFolder
 
   val IMG_HEIGHT = 800
   val IMG_WIDTH = 1400
@@ -23,7 +27,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
   }
 
   private def createGif(imgName: String) = {
-    implicit val wd: ammonite.ops.Path = cwd / "GeneratedImages"
+    implicit val wd: ammonite.ops.Path = basePath / "GeneratedImages"
     %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
   }
 
@@ -161,8 +165,8 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
   }
 
   def againWithoutSubclassingRectUpdated() = multiStageImagesClass("rect_updated") { img =>
-  import ammonite.ops.cwd
-    implicit val wd: ammonite.ops.Path = cwd / "TransformationImages"
+    implicit val wd = tranformationImagesFolder
+
     val rect = smallRectangleAt(50, 50)
     def demoImage(imgName: String) = (wd / imgName).toIO
     val img1 = demoImage("single_seed.png")

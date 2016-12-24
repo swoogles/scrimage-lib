@@ -106,7 +106,6 @@ object CustomDrawable {
       val newItem = nextItem match {
         case textDrawable: TextDrawable => textDrawable match {
           case nli: NumericalListItem => nli.copy(rect=newRect)
-          case pli: PhoneNumberListItem => pli.copy(rect=newRect)
         }
       }
       (newItem, accItems :+ newItem)
@@ -139,9 +138,3 @@ case class NumericalListItem(rect: Rect, value: Int = 1) extends TextDrawable {
   }
 
 }
-
-case class PhoneNumberListItem(phoneNumber: String, rect: Rect, value: Int = 1) extends TextDrawable {
-  override val imgFont = new JFont("Sans-seriff", 1, 14)
-  val content = phoneNumber
-}
-

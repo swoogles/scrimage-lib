@@ -154,20 +154,11 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       )
 
     val typedUsers = 
-    //   users.map { name =>
-    //   PhoneNumberListItem(
-    //     name,
-    //     wideRectangleAt(x=200, y=50)
-    //   )
-    // }
-
       CustomDrawable.spaceRowClassRectUpdated (
-      users.map { name =>
-      CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, name)
-    }
-    )
-
-    // val typedUsers = CustomDrawable.spaceRow(typedUsersUnspaced)
+        users.map { name =>
+          CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, name)
+        }
+      )
 
     val organizedNumbers = List[String]()
 
@@ -177,18 +168,13 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
     }
 
     val devicesDataStore = 
-      // TextualDataStructure(, , user_devices)
-
       CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT * 5 / 8), StandaloneDrawing.pprintDrawing, user_devices)
       
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = 
-        // TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
         CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT / 4), StandaloneDrawing.pprintDrawing, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
-
-    // null
   }
 
   def againWithoutSubclassingRectUpdated() = multiStageImagesClass("rect_updated") { img =>

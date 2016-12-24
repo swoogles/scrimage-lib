@@ -125,11 +125,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       typedPhoneNumbersNew.scanLeft((organizedNumbers, typedPhoneNumbersNew)){ case ((sortedNumbers, remainingNumbers), li) =>
         val region = areaCodesAndStates.get(li.content.take(3)).getOrElse("UNKNOWN")
         val neighboringEntries = sortedNumbers(region)
-        val result = (sortedNumbers + (region -> (li.content :: neighboringEntries)), remainingNumbers.tail)
-        import pprint.Config
-        implicit val pprintConfig = Config()
-        pprint.pprintln(result)
-        result
+        (sortedNumbers + (region -> (li.content :: neighboringEntries)), remainingNumbers.tail)
       }
 
 
@@ -143,7 +139,7 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
 
   }
 
-  def devicesForUsers() = multiStageImages("user_devices") { img =>
+  def devicesForUsers() = multiStageImagesClass("user_devices_non_subclassed") { img =>
 
     val users = List(
       "Bill Frasure",
@@ -157,28 +153,42 @@ object Transformations extends TextDrawing with FileSystemOperations with Bounda
       "Andrew Proctor" -> List("336-687-3176", "336-654-5141")
       )
 
-    val typedUsersUnspaced = users.map { name =>
-      PhoneNumberListItem(
-        name,
-        wideRectangleAt(x=200, y=50)
-      )
-    }
+    val typedUsers = 
+    //   users.map { name =>
+    //   PhoneNumberListItem(
+    //     name,
+    //     wideRectangleAt(x=200, y=50)
+    //   )
+    // }
 
-    val typedUsers = CustomDrawable.spaceRow(typedUsersUnspaced)
+      CustomDrawable.spaceRowClassRectUpdated (
+      users.map { name =>
+      CustomDrawableRectUpdated(wideRectangleAt(x=200, y=50), StandaloneDrawing.pprintDrawing, name)
+    }
+    )
+
+    // val typedUsers = CustomDrawable.spaceRow(typedUsersUnspaced)
 
     val organizedNumbers = List[String]()
 
     val devicesWithRemainingUsers = typedUsers.scanLeft((organizedNumbers, typedUsers)){ case ((sortedNumbers, remainingUsers), user) =>
-      val userDevices = user_devices.get(user.phoneNumber).toList.flatten
+      val userDevices = user_devices.get(user.content).toList.flatten
       (sortedNumbers ::: userDevices, remainingUsers.tail)
     }
 
-    val devicesDataStore = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT * 5 / 8, user_devices)
+    val devicesDataStore = 
+      // TextualDataStructure(, , user_devices)
+
+      CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT * 5 / 8), StandaloneDrawing.pprintDrawing, user_devices)
+      
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
-      val textualDataStructure = TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
+      val textualDataStructure = 
+        // TextualDataStructure(IMG_WIDTH/7, IMG_HEIGHT/4, currentLocations)
+        CustomDrawableRectUpdated(wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT / 4), StandaloneDrawing.pprintDrawing, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
 
+    // null
   }
 
   def againWithoutSubclassingRectUpdated() = multiStageImagesClass("rect_updated") { img =>

@@ -10,6 +10,18 @@ sealed trait CustomDrawable {
   def draw(canvas: Canvas): Canvas
 }
 
+object CustomDrawableRectUpdated {
+  def apply(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: Iterable[_]): CustomDrawableRectUpdated = {
+    import pprint.Config
+    implicit val pprintConfig = Config()
+    CustomDrawableRectUpdated(rect, drawWithRect, pprint.stringify(content, width=40))
+  }
+}
+
+/*
+Passing in a String for content will leave it unchanged, but passing an Iterable[_] will
+result in the content being pprint formatted before drawing.
+*/
 case class CustomDrawableRectUpdated(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: String = "DEFAULT") {
   def draw: Canvas => Canvas = {
     drawWithRect(rect)(content)
@@ -84,31 +96,6 @@ sealed trait TextDrawable extends CustomDrawable {
 
 }
 
-sealed trait PprintTextDrawable extends CustomDrawable with BoundaryBoxes {
-  import pprint.Config
-  val x: Int
-  val y: Int
-  override implicit val pprintConfig = Config()
-
-  val rect: Rect =
-    Rect(x=x, y=y, width=50, height=50, rectangleConfig )
-  val content: Iterable[_]
-  override val imgFont = new JFont("Sans-seriff", 1, 28)
-
-  def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
-  val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
-  drawableTextLines.map { text=>text.x }
-
-  override def draw(canvas: Canvas): Canvas = {
-    drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
-      curCanvas.draw(nextText) 
-    }
-  }
-
-}
-
-case class TextualDataStructure(x: Int, y: Int, content: Iterable[_]) extends PprintTextDrawable
-
 object CustomDrawable {
   import monocle.Lens
   import monocle.macros.GenLens
@@ -117,9 +104,6 @@ object CustomDrawable {
     val (finalRect, spacedList: List[T]) = tail.fold((head, List(head): List[T])) { case ((lastDrawable: T, accItems: List[T]), nextItem: T) =>
       val newRect = nextItem.rect.copy(x = lastDrawable.rect.x + lastDrawable.rect.width + 10)
       val newItem = nextItem match {
-        case pprintable: PprintTextDrawable => pprintable match {
-          case textual: TextualDataStructure => textual.copy(x=newRect.x, y=newRect.y)
-        }
         case textDrawable: TextDrawable => textDrawable match {
           case nli: NumericalListItem => nli.copy(rect=newRect)
           case pli: PhoneNumberListItem => pli.copy(rect=newRect)

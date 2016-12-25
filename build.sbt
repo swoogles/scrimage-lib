@@ -1,6 +1,6 @@
 name := "scrimage-lib"
 
-version := "0.3"
+version := "0.3-SNAPSHOT"
 
 organization := "billding"
 

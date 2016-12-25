@@ -3,6 +3,7 @@ package imagemanipulation
 trait FileSystemOperations {
   import ammonite.ops._
 
+  //  TODO rm these paths
   val originalImgDir = ammonite.ops.pwd / 'OriginalImages
   val listed = ls! originalImgDir
   val manipulatedImgDir = cwd / 'ManipulatedImages

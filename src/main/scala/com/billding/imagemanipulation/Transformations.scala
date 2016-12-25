@@ -25,13 +25,15 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
 
   def imageGeneratingFunction( imgName: String)( imgProducer: Image => Image) = {
     val finalImage = imgProducer(blankImg)
-    val imgPath = generatedImgDir / (s"$imgName$IMG_EXTENSION")
+    val imgPath = generatedImagesFolder / (s"$imgName$IMG_EXTENSION")
     finalImage.output(imgPath.toIO)(JpegWriter())
   }
 
   private def createGif(imgName: String) = {
     implicit val wd: ammonite.ops.Path = basePath / "GeneratedImages"
+    val outFile  = basePath / "GeneratedImages" / s"$imgName.gif"
     %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
+    outFile
   }
 
   def multiStageImagesClass( imgName: String)( imgProducer: Image => List[List[CustomDrawable]]) = {

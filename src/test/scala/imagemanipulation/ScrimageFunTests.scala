@@ -9,7 +9,7 @@ class ScrimageFunTests extends FlatSpec {
   val transformations = new Transformations(cwd)
 
   "scrimage" should "show all the steps in a fold summation" in {
-    transformations.foldSummationImage()
+    transformations.foldSummationImage().steps
   }
 
   "scrimage" should "create phone number fold demo image" in {
@@ -21,7 +21,7 @@ class ScrimageFunTests extends FlatSpec {
   }
 
   "scrimage" should "draw tomatoes without subclasses" in {
-    val compositeImage  = transformations.againWithoutSubclassingRectUpdated()
+    val compositeImage  = transformations.tomatos()
   }
 
 }

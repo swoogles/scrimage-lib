@@ -20,6 +20,7 @@ case class CustomDrawable(rect: Rect, drawWithRect: Rect => String => Canvas => 
   }
 
   def nextStageOpt(img: java.io.File) = {
+    // TODO: Handle this math/impurity elsewhere! It doesn't belong in this Option transformation.
     if( scala.math.abs(scala.util.Random.nextInt % 100) > 20 ) {
       val nextRowVersion = onNextRow
       Some(nextRowVersion.copy(drawWithRect=StandaloneDrawing.imgDrawerSepRect(img)))

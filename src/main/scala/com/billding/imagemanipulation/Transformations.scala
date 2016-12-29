@@ -7,7 +7,11 @@ import com.sksamuel.scrimage.nio.JpegWriter
 import com.sksamuel.scrimage.Color
 import com.sksamuel.scrimage.Image
 
-class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with FileSystemOperations with BoundaryBoxes {
+import ammonite.ops.Path
+
+case class TransformationResults(steps: List[Path], gif: Path)
+
+class Transformations(basePath: Path) extends TextDrawing with FileSystemOperations with BoundaryBoxes {
   import ammonite.ops.%
   import ammonite.ops.mkdir
 
@@ -23,14 +27,15 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
 
   val IMG_EXTENSION = ".jpg"
 
-  def imageGeneratingFunction( imgName: String)( imgProducer: Image => Image) = {
+  private def imageGeneratingFunction( imgName: String)( imgProducer: Image => Image) = {
     val finalImage = imgProducer(blankImg)
     val imgPath = generatedImagesFolder / (s"$imgName$IMG_EXTENSION")
     finalImage.output(imgPath.toIO)(JpegWriter())
+    imgPath
   }
 
   private def createGif(imgName: String) = {
-    implicit val wd: ammonite.ops.Path = basePath / "GeneratedImages"
+    implicit val wd: Path = basePath / "GeneratedImages"
     val outFile  = basePath / "GeneratedImages" / s"$imgName.gif"
     %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
     outFile
@@ -41,13 +46,16 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
 
     val stagedImages: List[Image] = drawMultipleImagesClass(blankImg, shapeLists)
 
-    stagedImages.zipWithIndex.foreach { case(finalImage, idx) =>
+    val createdImages: List[Path] = stagedImages.zipWithIndex.map { case(finalImage, idx) =>
       val numberedImgName = s"${imgName}_$idx"
       imageGeneratingFunction(numberedImgName){ (blankImg)=>
         finalImage 
       }
     }
-    createGif(imgName)
+    val gifResult =createGif(imgName)
+    val results = TransformationResults(createdImages, gifResult)
+    // gifResult
+    results
   }
 
   private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
@@ -169,7 +177,7 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
     }
   }
 
-  def againWithoutSubclassingRectUpdated() = multiStageImagesClass("rect_updated") { img =>
+  def tomatos() = multiStageImagesClass("rect_updated") { img =>
     implicit val wd = tranformationImagesFolder
 
     val rect = smallRectangleAt(50, 50)
@@ -177,10 +185,9 @@ class Transformations(basePath: ammonite.ops.Path) extends TextDrawing with File
     // val source = Source.fromURL(getClass.getResource("/data.xml"))
     import scala.io.Source
       // (wd / imgName).toIO
-      val file: URL = getClass.getResource("/TransformationImages/" + imgName)
 
+      val file: URL = getClass.getResource("/TransformationImages/" + imgName)
       new File(file.toURI)
-//      Source.fromURL()
     }
 
     // The string argument given to getResource is a path relative to

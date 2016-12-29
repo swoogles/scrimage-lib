@@ -2,7 +2,7 @@ name := "scrimage-lib"
 
 version := "0.3-SNAPSHOT"
 
-organization := "billding"
+organization := "com.billding"
 
 scalaVersion := "2.11.8"
 

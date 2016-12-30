@@ -8,14 +8,6 @@ class ScrimageFunTests extends FlatSpec {
 
   val transformations = new Transformations(cwd)
 
-  "scrimage" should "show all the steps in a fold summation" in {
-    transformations.foldSummationImage().steps
-  }
-
-  "scrimage" should "create phone number fold demo image" in {
-    transformations.phoneNumbersMultiStageNonSubclass()
-  }
-
   "scrimage" should "create user->devices fold image" in {
     transformations.devicesForUsers()
   }

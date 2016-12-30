@@ -58,10 +58,7 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
         finalImage 
       }
     }
-    val gifResult =createGif(imgName)
-    val results = TransformationResults(createdImages, gifResult)
-    // gifResult
-    results
+    TransformationResults(createdImages, createGif(imgName))
   }
 
   private def drawMultipleImagesClass(img: Image, stagedDrawables: List[List[CustomDrawable]]): List[Image] = {
@@ -70,80 +67,6 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
         case (curImg: Image, li: CustomDrawable) => li.draw(curImg)
       }
     }
-  }
-
-
-  def foldSummationImage() = multiStageImagesClass("rectangles") { img =>
-
-    val typedItems = 
-    CustomDrawable.spaceRowClassRectUpdated(
-      List.fill(5) {
-        CustomDrawable(
-          1,
-          boxes.smallRectangleAt(COL_5, ROW_1)
-        )
-      }
-    )
-
-    
-     val accumulator = CustomDrawable(0, boxes.smallRectangleAt(COL_1, ROW_1))
-
-     val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
-       case ((acc: CustomDrawable, remainingItems: List[CustomDrawable]), nextItem: CustomDrawable) => {
-
-         // TODO Figure out how to avoid copying value & content here.
-         // It should be possible to use a single value.
-         val newValue = acc.value+nextItem.value
-         (
-           acc
-             .onNextRow
-             .copy( value=newValue, content=newValue.toString), 
-           remainingItems.tail.map(_.onNextRow)
-         )
-       }
-     }
-
-    foldingSummation.map { tup => tup._1 +: tup._2 }
-  }
-
-  def phoneNumbersMultiStageNonSubclass() = multiStageImagesClass("phone_folding_non_subclassed") { img =>
-    val areaCodesAndStates = Map(
-      "801"->"UT",
-      "970"->"CO"
-    )
-    val phoneNumbers = List(
-      "801-971-9844",
-      "970-104-1623",
-      "801-200-3273",
-      "970-222-3333",
-      "800-222-3333"
-    )
-
-    val typedPhoneNumbersNew = 
-      CustomDrawable.spaceRowClassRectUpdated (
-      phoneNumbers.map { number =>
-      CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawing, number)
-    }
-    )
-
-    val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
-
-    val locationFoldingWithRemainingClassed: List[(Map[String,List[String]], List[CustomDrawable])] =
-      typedPhoneNumbersNew.scanLeft((organizedNumbers, typedPhoneNumbersNew)){ case ((sortedNumbers, remainingNumbers), li) =>
-        val region = areaCodesAndStates.get(li.content.take(3)).getOrElse("UNKNOWN")
-        val neighboringEntries = sortedNumbers(region)
-        (sortedNumbers + (region -> (li.content :: neighboringEntries)), remainingNumbers.tail)
-      }
-
-
-    locationFoldingWithRemainingClassed.map { case(currentLocations, remainingNumbers) =>
-      import com.sksamuel.scrimage.canvas.drawable.Rect
-      val rect: Rect = Rect(x=IMG_WIDTH/7, y=IMG_HEIGHT/2, width=50, height=50, rectangleConfig )
-      val pprintedContent  = pprint.stringify(currentLocations, width=40) // TODO Handle with clean function. Don't pprint here.
-      val textualDataStructure = CustomDrawable(rect, StandaloneDrawing.pprintDrawing, pprintedContent)
-      textualDataStructure :: remainingNumbers
-    }
-
   }
 
   def devicesForUsers() = multiStageImagesClass("user_devices_non_subclassed") { img =>
@@ -177,7 +100,7 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     }
 
     val devicesDataStore = 
-      CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_7), StandaloneDrawing.pprintDrawing, user_devices)
+      CustomDrawable(boxes.wideRectangleAt(COL_5, ROW_7), StandaloneDrawing.pprintDrawing, user_devices)
       
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = 

@@ -58,10 +58,13 @@ class ScaledBoxes(width: Int, height: Int) extends TextDrawing {
       g2.setFont(imgFont)
     }
 
-  def smallRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=(width*(1/16.0)).toInt, (width*(1/16.0)).toInt, rectangleConfig )
+  // private def smallRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=(width*(1/16.0)).toInt, (width*(1/16.0)).toInt, rectangleConfig )
+  val smallRectangleWidth = (width*(1/16.0)).toInt
+  val wideRectangleWidth = smallRectangleWidth*3
+
   def smallRectangleAt(col: Column, row: Row) = {
     val rect = Rect(
-    x=(width*(col.value/12.0)).toInt,
+    x=smallRectangleWidth*col.value,
     y=(height*(row.value/12.0)).toInt,
     width=(width*(1/16.0)).toInt,
     (width*(1/16.0)).toInt, rectangleConfig 
@@ -70,13 +73,9 @@ class ScaledBoxes(width: Int, height: Int) extends TextDrawing {
     rect
   }
 
-  def wideRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=(width*(3/16.0)).toInt, (width*(1/16.0)).toInt, rectangleConfig )
-  def wideRectangleAt(col: Column, row: Row) = Rect(
-    x=(width*(col.value/12.0)).toInt,
-    y=(height*(row.value/12.0)).toInt,
-    width=(width*(3/16.0)).toInt,
-    (width*(1/16.0)).toInt, rectangleConfig 
-  )
+  def wideRectangleAt(col: Column, row: Row) =
+    smallRectangleAt(col,row)
+      .copy(width=wideRectangleWidth)
 
 }
 

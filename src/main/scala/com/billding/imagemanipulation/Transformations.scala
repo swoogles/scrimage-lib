@@ -9,6 +9,9 @@ import com.sksamuel.scrimage.Image
 
 import ammonite.ops.Path
 
+import Rows._
+import Columns._
+
 case class TransformationResults(steps: List[Path], gif: Path)
 
 class Transformations(basePath: Path) extends TextDrawing with FileSystemOperations with BoundaryBoxes {
@@ -77,12 +80,13 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
       List.fill(5) {
         CustomDrawable(
           1,
-          boxes.smallRectangleAt(x=(IMG_WIDTH*(3/16.0)).toInt, y=50)
+          boxes.smallRectangleAt(COL_5, ROW_1)
         )
       }
     )
 
-     val accumulator = CustomDrawable(0, boxes.smallRectangleAt(x=(IMG_WIDTH*(1/16.0)).toInt, y=50))
+    
+     val accumulator = CustomDrawable(0, boxes.smallRectangleAt(COL_1, ROW_1))
 
      val foldingSummation = typedItems.scanLeft((accumulator, typedItems)){
        case ((acc: CustomDrawable, remainingItems: List[CustomDrawable]), nextItem: CustomDrawable) => {
@@ -118,7 +122,7 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     val typedPhoneNumbersNew = 
       CustomDrawable.spaceRowClassRectUpdated (
       phoneNumbers.map { number =>
-      CustomDrawable(boxes.wideRectangleAt(x=50, y=50), StandaloneDrawing.pprintDrawing, number)
+      CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawing, number)
     }
     )
 
@@ -159,7 +163,9 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     val typedUsers = 
       CustomDrawable.spaceRowClassRectUpdated (
         users.map { name =>
-          CustomDrawable(boxes.wideRectangleAt(x=50, y=50), StandaloneDrawing.pprintDrawing, name)
+          val drawable = CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawing, name)
+          pprint.pprintln(drawable)
+          drawable
         }
       )
 
@@ -171,11 +177,11 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     }
 
     val devicesDataStore = 
-      CustomDrawable(boxes.wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT * 5 / 8), StandaloneDrawing.pprintDrawing, user_devices)
+      CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_7), StandaloneDrawing.pprintDrawing, user_devices)
       
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = 
-        CustomDrawable(boxes.wideRectangleAt(x=IMG_WIDTH/7, y=IMG_HEIGHT / 4), StandaloneDrawing.pprintDrawing, currentLocations)
+        CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_3), StandaloneDrawing.pprintDrawing, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
   }
@@ -183,7 +189,7 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
   def tomatos() = multiStageImagesClass("rect_updated") { img =>
     implicit val wd = tranformationImagesFolder
 
-    val rect = boxes.smallRectangleAt(boxes.COL_1, boxes.ROW_1)
+    val rect = boxes.smallRectangleAt(COL_1, ROW_1)
     def demoImage(imgName: String) = {
     // val source = Source.fromURL(getClass.getResource("/data.xml"))
     import scala.io.Source
@@ -205,7 +211,7 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     
 
     val seedsUnspaced = 
-        List.fill(11) {
+        List.fill(8) {
           CustomDrawable(rect, StandaloneDrawing.imgDrawerSepRect(img1))
         }
 

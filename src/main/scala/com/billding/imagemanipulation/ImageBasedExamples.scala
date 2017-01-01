@@ -71,7 +71,7 @@ object WoodFunctions {
   }
 }
 
-object ImageBasedExamples extends TextDrawing with FileSystemOperations with BoundaryBoxes {
+object ImageBasedExamples extends TextDrawing with FileSystemOperations {
   import scala.util.{Try, Success, Failure}
   val scenario1 = {
     val forest: List[Tree] = (

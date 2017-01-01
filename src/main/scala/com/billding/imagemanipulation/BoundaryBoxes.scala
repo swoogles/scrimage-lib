@@ -4,18 +4,6 @@ import java.awt.{Color => JColor}
 import com.sksamuel.scrimage.canvas.drawable.Rect
 import java.awt.Graphics2D
 
-trait BoundaryBoxes extends TextDrawing {
-  protected val rectangleConfig = { g2: Graphics2D =>
-      g2.setColor(JColor.GREEN)
-      g2.setFont(imgFont)
-    }
-
-  protected def smallRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=50, height=50, rectangleConfig )
-
-  protected def wideRectangleAt(x: Int, y: Int) = Rect(x=x, y=y, width=150, height=50, rectangleConfig )
-
-}
-
 sealed trait Column {
   val value: Int
 }
@@ -73,7 +61,7 @@ class ScaledBoxes(width: Int, height: Int) extends TextDrawing {
     rect
   }
 
-  def wideRectangleAt(col: Column, row: Row) =
+  def wideRectangleAt(col: Column, row: Row): Rect =
     smallRectangleAt(col,row)
       .copy(width=wideRectangleWidth)
 

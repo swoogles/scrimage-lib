@@ -14,7 +14,7 @@ import Columns._
 
 case class TransformationResults(steps: List[Path], gif: Path)
 
-class Transformations(basePath: Path) extends TextDrawing with FileSystemOperations with BoundaryBoxes {
+class Transformations(basePath: Path) extends TextDrawing with FileSystemOperations {
   import ammonite.ops.%
   import ammonite.ops.mkdir
 
@@ -41,9 +41,8 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
   }
 
   private def createGif(imgName: String) = {
-    implicit val wd: Path = basePath / "GeneratedImages"
-    val outFile  = basePath / "GeneratedImages" / s"$imgName.gif"
-    %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")
+    val outFile  = generatedImagesFolder / s"$imgName.gif"
+    %('convert, "-delay", "120", "-loop", "0", s"${imgName}*$IMG_EXTENSION", s"$imgName.gif")(generatedImagesFolder)
     outFile
   }
 

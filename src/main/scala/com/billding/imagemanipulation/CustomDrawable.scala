@@ -58,7 +58,7 @@ object StandaloneDrawing extends TextDrawing {
     val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
     drawableTextLines.map { text=>text.x }
 
-    drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
+    drawableTextLines.foldLeft(canvas){ (curCanvas, nextText) => 
       curCanvas.draw(nextText) 
     }
   }

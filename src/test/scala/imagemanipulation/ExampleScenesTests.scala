@@ -16,5 +16,13 @@ class ExampleScenesTests extends FlatSpec {
     scenes.phoneNumbersMultiStageNonSubclass()
   }
 
+  "scrimage" should "create user->devices fold image" in {
+    scenes.devicesForUsers()
+  }
+
+  "scrimage" should "draw tomatoes without subclasses" in {
+    val compositeImage  = scenes.tomatos()
+  }
+
 
 }

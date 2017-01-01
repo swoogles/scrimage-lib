@@ -70,23 +70,26 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
   }
 
   def devicesForUsers() = multiStageImagesClass("user_devices_non_subclassed") { img =>
+    val bill = "Bill Frasure"
+    val garrett =  "Garrett Mctear"
+    val andrew = "Andrew Proctor"
 
     val users = List(
-      "Bill Frasure",
-      "Garrett Mctear",
-      "Andrew Proctor"
+      bill,
+      garrett, 
+      andrew
     )
 
     val user_devices = Map(
-      "Bill Frasure" -> List("970-104-1623", "970-222-3333"),
-      "Garrett Mctear" -> List("801-971-9844", "801-200-3273"),
-      "Andrew Proctor" -> List("336-687-3176", "336-654-5141")
-      )
+      bill -> List("970-104-1623", "970-222-3333"),
+      garrett -> List("801-971-9844", "801-200-3273"),
+      andrew -> List("336-687-3176", "336-654-5141")
+    )
 
     val typedUsers = 
       CustomDrawable.spaceRowClassRectUpdated (
         users.map { name =>
-          val drawable = CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawing, name)
+          val drawable = CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawingWithoutBox, name)
           pprint.pprintln(drawable)
           drawable
         }
@@ -100,11 +103,11 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     }
 
     val devicesDataStore = 
-      CustomDrawable(boxes.wideRectangleAt(COL_5, ROW_7), StandaloneDrawing.pprintDrawing, user_devices)
+      CustomDrawable(boxes.wideRectangleAt(COL_5, ROW_7), StandaloneDrawing.pprintDrawingWithoutBox, user_devices)
       
     devicesWithRemainingUsers.map { case(currentLocations, remainingUsers) =>
       val textualDataStructure = 
-        CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_3), StandaloneDrawing.pprintDrawing, currentLocations)
+        CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_3), StandaloneDrawing.pprintDrawingWithoutBox, currentLocations)
       devicesDataStore :: textualDataStructure :: remainingUsers
     }
   }
@@ -125,17 +128,9 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
     // The string argument given to getResource is a path relative to
     // the resources directory.
 
-    val img1 = demoImage("single_seed.png")
-    val img2 = demoImage("dirt_pile.jpg")
-    val img3 = demoImage("seedling.jpg")
-    val img4 = demoImage("sapling.jpg")
-    val img5 = demoImage("grown_plant.jpg")
-    val img6 = demoImage("tomato.jpg")
-    
-
     val seedsUnspaced = 
         List.fill(8) {
-          CustomDrawable(rect, StandaloneDrawing.imgDrawerSepRect(img1))
+          CustomDrawable(rect, StandaloneDrawing.imgDrawerSepRect(demoImage("single_seed.png")))
         }
 
     val seeds = 
@@ -144,19 +139,19 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
       )
 
     val dirtPiles = seeds
-      .flatMap{ _.nextStageOpt(img2) }
+      .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }
 
     val seedlings = dirtPiles
-      .flatMap{ _.nextStageOpt(img3) }
+      .flatMap{ _.nextStageOpt(demoImage("seedling.jpg")) }
 
     val saplings = seedlings
-      .flatMap{ _.nextStageOpt(img4) }
+      .flatMap{ _.nextStageOpt(demoImage("sapling.jpg")) }
 
     val plants = saplings
-      .flatMap{ _.nextStageOpt(img5) }
+      .flatMap{ _.nextStageOpt(demoImage("grown_plant.jpg")) }
 
     val tomatoes: List[CustomDrawable] = plants
-      .flatMap{ _.nextStageList(img6) }
+      .flatMap{ _.nextStageList(demoImage("tomato.jpg")) }
 
 
     val tomatoesSpaced: List[CustomDrawable] = CustomDrawable.spaceRowClassRectUpdated(tomatoes)

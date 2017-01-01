@@ -47,7 +47,7 @@ object StandaloneDrawing extends TextDrawing {
         canvas.draw(rect).overlay(image1, rect.x, rect.y)
   }
 
-  val pprintDrawing: Rect=>String=>Canvas=>Canvas = 
+  val pprintDrawingWithoutBox: Rect=>String=>Canvas=>Canvas = 
   { rect => content => canvas =>
     import pprint.Config
     implicit val pprintConfig = Config()
@@ -69,13 +69,14 @@ object CustomDrawable {
   import monocle.Lens
   import monocle.macros.GenLens
 
+  val marginBetweenItems = 10
   def spaceRowClassRectUpdated( imgItems: List[CustomDrawable] ): List[CustomDrawable] = {
     val rectLens = GenLens[CustomDrawable](x=>x.rect)
     val xLens = GenLens[Rect](rect=>rect.x)
     val (head :: tail) = imgItems
     tail.foldLeft(List(head)) { (accItems, nextItem) =>
       val lastRect = accItems.last.rect
-      val newXValue = lastRect.x + lastRect.width + 10
+      val newXValue = lastRect.x + lastRect.width + marginBetweenItems
       val spacedItem = (rectLens composeLens xLens).modify(oldX=>newXValue)(nextItem)
       accItems :+ spacedItem
     }
@@ -88,6 +89,6 @@ object CustomDrawable {
   }
 
   def apply(value: Int, rect: Rect): CustomDrawable = {
-    CustomDrawable(rect, StandaloneDrawing.pprintDrawing, value.toString, value)
+    CustomDrawable(rect, StandaloneDrawing.pprintDrawingWithoutBox, value.toString, value)
   }
 }

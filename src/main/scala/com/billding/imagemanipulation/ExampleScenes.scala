@@ -69,10 +69,10 @@ class ExampleScenes(basePath: Path) {
 
     val typedPhoneNumbersNew = 
       CustomDrawable.spaceRowClassRectUpdated (
-      phoneNumbers.map { number =>
-      CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawing, number)
-    }
-    )
+        phoneNumbers.map { number =>
+          CustomDrawable(boxes.wideRectangleAt(COL_1, ROW_1), StandaloneDrawing.pprintDrawingWithoutBox, number)
+        }
+      )
 
     val organizedNumbers = Map[String, List[String]]().withDefaultValue(Nil)
 
@@ -86,10 +86,9 @@ class ExampleScenes(basePath: Path) {
 
     locationFoldingWithRemainingClassed.map { case(currentLocations, remainingNumbers) =>
       import com.sksamuel.scrimage.canvas.drawable.Rect
-      // val rect: Rect = Rect(x=IMG_WIDTH/7, y=IMG_HEIGHT/2, width=50, height=50, rectangleConfig )
       val rect = boxes.smallRectangleAt(COL_1, ROW_6)
       val pprintedContent  = pprint.stringify(currentLocations, width=40) // TODO Handle with clean function. Don't pprint here.
-      val textualDataStructure = CustomDrawable(rect, StandaloneDrawing.pprintDrawing, pprintedContent)
+      val textualDataStructure = CustomDrawable(rect, StandaloneDrawing.pprintDrawingWithoutBox, pprintedContent)
       textualDataStructure :: remainingNumbers
     }
 

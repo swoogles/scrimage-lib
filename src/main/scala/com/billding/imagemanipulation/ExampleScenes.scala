@@ -13,13 +13,10 @@ import Rows._
 import Columns._
 
 
-class ExampleScenes(basePath: Path) {
+class ExampleScenes(basePath: Path, imgWidth: Int, imgHeight: Int) {
   val transformations = new Transformations(basePath)
 
-  val IMG_HEIGHT = 500
-  val IMG_WIDTH = 800
-
-  val boxes = new ScaledBoxes(IMG_WIDTH, IMG_HEIGHT)
+  val boxes = new ScaledBoxes(imgWidth, imgHeight)
 
   def foldSummationImage() = transformations.multiStageImagesClass("rectangles") { img =>
 
@@ -85,7 +82,6 @@ class ExampleScenes(basePath: Path) {
 
 
     locationFoldingWithRemainingClassed.map { case(currentLocations, remainingNumbers) =>
-      import com.sksamuel.scrimage.canvas.drawable.Rect
       val rect = boxes.smallRectangleAt(COL_1, ROW_6)
       val pprintedContent  = pprint.stringify(currentLocations, width=40) // TODO Handle with clean function. Don't pprint here.
       val textualDataStructure = CustomDrawable(rect, StandaloneDrawing.pprintDrawingWithoutBox, pprintedContent)

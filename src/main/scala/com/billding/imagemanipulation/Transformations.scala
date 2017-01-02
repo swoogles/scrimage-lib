@@ -18,7 +18,6 @@ class Transformations(basePath: Path) extends TextDrawing with FileSystemOperati
   import ammonite.ops.%
   import ammonite.ops.mkdir
 
-
   private val generatedImagesFolder = basePath / "GeneratedImages"
   private val tranformationImagesFolder = basePath / "TransformationImages"
   mkdir! generatedImagesFolder

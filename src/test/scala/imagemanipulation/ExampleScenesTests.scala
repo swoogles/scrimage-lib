@@ -4,9 +4,11 @@ import org.scalatest.FlatSpec
 
 class ExampleScenesTests extends FlatSpec {
   import ammonite.ops.cwd
+  val imgHeight = 500
+  val imgWidth = 800
   val wd: ammonite.ops.Path = cwd / "TransformationImages"
 
-  val scenes = new ExampleScenes(cwd)
+  val scenes = new ExampleScenes(cwd, imgWidth, imgHeight)
 
   "The summation scene" should "produce good images" in {
     scenes.foldSummationImage().steps

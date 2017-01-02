@@ -51,14 +51,12 @@ class ScaledBoxes(width: Int, height: Int) extends TextDrawing {
   val wideRectangleWidth = smallRectangleWidth*3
 
   def smallRectangleAt(col: Column, row: Row) = {
-    val rect = Rect(
-    x=smallRectangleWidth*col.value,
-    y=(height*(row.value/12.0)).toInt,
-    width=(width*(1/16.0)).toInt,
-    (width*(1/16.0)).toInt, rectangleConfig 
-  )
-    pprint.pprintln(rect)
-    rect
+    Rect(
+      x=smallRectangleWidth*col.value,
+      y=(height*(row.value/12.0)).toInt,
+      width=(width*(1/16.0)).toInt,
+      (width*(1/16.0)).toInt, rectangleConfig 
+    )
   }
 
   def wideRectangleAt(col: Column, row: Row): Rect =

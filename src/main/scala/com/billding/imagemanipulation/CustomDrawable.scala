@@ -52,13 +52,25 @@ object StandaloneDrawing extends TextDrawing {
     import pprint.Config
     implicit val pprintConfig = Config()
 
-    val imgFont = new JFont("Sans-seriff", 1, 14)
-
     def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
     val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
     drawableTextLines.map { text=>text.x }
 
     drawableTextLines.foldLeft(canvas){ (curCanvas, nextText) => 
+      curCanvas.draw(nextText) 
+    }
+  }
+
+  val pprintDrawingWithBox: Rect=>String=>Canvas=>Canvas = 
+  { rect => content => canvas =>
+    import pprint.Config
+    implicit val pprintConfig = Config()
+
+    def textLines: List[String] = pprint.stringify(content, width=40).split("\n").toList
+    val drawableTextLines: List[Text] = makeTextDrawable(textLines, rect.x+15, rect.y+30)
+    drawableTextLines.map { text=>text.x }
+
+    drawableTextLines.foldLeft(canvas.draw(rect)){ (curCanvas, nextText) => 
       curCanvas.draw(nextText) 
     }
   }
@@ -83,12 +95,10 @@ object CustomDrawable {
   }
 
   def apply(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: Iterable[_]): CustomDrawable = {
-    import pprint.Config
-    implicit val pprintConfig = Config()
-    CustomDrawable(rect, drawWithRect, pprint.stringify(content, width=40))
+    CustomDrawable(rect, drawWithRect, content.toString)
   }
 
   def apply(value: Int, rect: Rect): CustomDrawable = {
-    CustomDrawable(rect, StandaloneDrawing.pprintDrawingWithoutBox, value.toString, value)
+    CustomDrawable(rect, StandaloneDrawing.pprintDrawingWithBox, value.toString, value)
   }
 }

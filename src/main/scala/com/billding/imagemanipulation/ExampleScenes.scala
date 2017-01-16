@@ -162,6 +162,33 @@ class ExampleScenes(basePath: Path, imgWidth: Int, imgHeight: Int) {
         seedsUnspaced
       )
 
+    import cats.data.State
+
+    val sceneProgression: State[List[CustomDrawable], String] = State( startingDrawables =>
+      (startingDrawables
+          .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }, "all good!")
+          )
+
+    val seedlingState: State[List[CustomDrawable], String] = State( dirtPiles =>
+      (dirtPiles
+          .flatMap{ _.nextStageOpt(demoImage("seedling.jpg")) }, "all good!")
+          )
+
+
+    val recipe = for ( dirtPiles <- sceneProgression;
+         seelings <- seedlingState
+         ) yield { "hi" }
+    val (finalState, finalRes) = recipe.run(seeds).value
+    println("finalState: " + finalState)
+    println("finalRes: " + finalRes)
+    
+    // for ( dirtScene <- sceneProgression;
+    //      seedling <- (dirtScene.nextStageOpt(demoImage("seedling.jpg")), "seelings!")
+    //    ) yield ()
+
+    // sceneProgression.
+
+
     val dirtPiles = seeds
       .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }
 

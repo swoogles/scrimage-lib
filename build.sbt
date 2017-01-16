@@ -23,5 +23,6 @@ libraryDependencies ++= Seq(
   "com.lihaoyi" %% "ammonite-ops" % "0.7.8",
   "com.github.julien-truffaut"  %%  "monocle-core"    % monocleVersion,
   "com.github.julien-truffaut"  %%  "monocle-generic" % monocleVersion,
-  "com.github.julien-truffaut"  %%  "monocle-macro"   % monocleVersion
+  "com.github.julien-truffaut"  %%  "monocle-macro"   % monocleVersion,
+  "org.typelevel" %% "cats" % "0.9.0"
 )

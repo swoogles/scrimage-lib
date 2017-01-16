@@ -5,15 +5,42 @@ import com.sksamuel.scrimage.canvas.drawable.Rect
 import com.sksamuel.scrimage.canvas.drawable.Text
 import com.sksamuel.scrimage.canvas.Canvas
 
+trait RowPositionable[T] {
+  def onNextRow: T
+  val initialRect: Rect
+  val repositionedRect = initialRect.copy(y=initialRect.y+75) // TODO Use imgHeight & width instead of hardcoded value.
+}
+
+trait Positionator[T] {
+  def makeRowPositionable(cd: T): RowPositionable[T]
+}
+
+object DefaultPositionables {
+  val customDrawable2RowPositionable = new Positionator[CustomDrawable] {
+    def makeRowPositionable(cd: CustomDrawable): RowPositionable[CustomDrawable] = new RowPositionable[CustomDrawable]{
+      val initialRect = cd.rect
+
+      def onNextRow =
+        cd.copy(rect=repositionedRect)
+
+    }
+  }
+}
+
 /*
 Passing in a String for content will leave it unchanged, but passing an Iterable[_] will
 result in the content being pprint formatted before drawing.
 */
-case class CustomDrawable(rect: Rect, drawWithRect: Rect => String => Canvas => Canvas, content: String = "DEFAULT", value: Int = 1) {
+case class CustomDrawable(rect: Rect,
+  drawWithRect: Rect => String => Canvas => Canvas,
+  content: String = "DEFAULT",
+  value: Int = 1
+  ) {
   def draw: Canvas => Canvas = {
     drawWithRect(rect)(content)
   }
 
+  // ** Now exists in Stageable trait.
   def onNextRow = {
     val nextRect = rect.copy(y=rect.y+75)
     copy(rect = nextRect)

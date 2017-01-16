@@ -189,6 +189,14 @@ class ExampleScenes(basePath: Path, imgWidth: Int, imgHeight: Int) {
     // sceneProgression.
 
 
+    for (
+         dirtPilesF <- seeds.map{_.nextStageOpt(demoImage("dirt_pile.jpg"))};
+         seedlingsF <- dirtPilesF.map{ _.nextStageOpt(demoImage("seedling.jpg")) };
+         saplingsF <- seedlingsF.map{ _.nextStageOpt(demoImage("sapling.jpg")) };
+         plantsF <- saplingsF.map{ _.nextStageOpt(demoImage("grown_plant.jpg")) };
+         tomatoesF <- plantsF.map{ _.nextStageList(demoImage("tomato.jpg")) }
+         ) yield ("ah?")
+
     val dirtPiles = seeds
       .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }
 

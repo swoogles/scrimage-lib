@@ -166,18 +166,18 @@ class ExampleScenes(basePath: Path, imgWidth: Int, imgHeight: Int) {
 
     val sceneProgression: State[List[CustomDrawable], String] = State( startingDrawables =>
       (startingDrawables
-          .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }, "all good!")
+          .flatMap{ _.nextStageOpt(demoImage("dirt_pile.jpg")) }, "dirt")
           )
 
     val seedlingState: State[List[CustomDrawable], String] = State( dirtPiles =>
       (dirtPiles
-          .flatMap{ _.nextStageOpt(demoImage("seedling.jpg")) }, "all good!")
+          .flatMap{ _.nextStageOpt(demoImage("seedling.jpg")) }, "seedlings")
           )
 
 
     val recipe = for ( dirtPiles <- sceneProgression;
-         seelings <- seedlingState
-         ) yield { "hi" }
+         seedlings <- seedlingState
+         ) yield { seedlings}
     val (finalState, finalRes) = recipe.run(seeds).value
     println("finalState: " + finalState)
     println("finalRes: " + finalRes)
